@@ -1,0 +1,25 @@
+@use './styles/variables' as *;
+
+.app {
+  min-height: 100vh;
+}
+
+.app__header {
+  display: flex;
+  align-items: center;
+  background: $color-bg-container;
+}
+
+.app__title {
+  margin: 0 !important;
+  color: $color-text;
+}
+
+.app__content {
+  padding: 24px;
+}
+
+.app__footer {
+  text-align: center;
+  color: $color-text-secondary;
+}

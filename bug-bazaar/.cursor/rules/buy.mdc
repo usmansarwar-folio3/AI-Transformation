@@ -1,0 +1,7 @@
+---
+description: Day 3 buy tasks — Redux Toolkit, cart, auth, errors, caching
+globs: src/features/cart/**,src/features/auth/**
+alwaysApply: false
+---
+
+Follow @docs/ai/buy.md for outcomes and done-when criteria.

@@ -1,0 +1,7 @@
+---
+description: Day 4 harden tasks — a11y, performance, WebSockets, tests, CI, monitoring
+globs: **/*.{test,spec}.{ts,tsx},.github/**,vitest.config.*,vite.config.*
+alwaysApply: false
+---
+
+Follow @docs/ai/harden.md for outcomes and done-when criteria.

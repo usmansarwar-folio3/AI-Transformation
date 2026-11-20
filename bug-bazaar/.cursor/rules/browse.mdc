@@ -1,0 +1,7 @@
+---
+description: Day 2 browse tasks — product list, filters, UI states, hooks, races
+globs: src/features/browse/**
+alwaysApply: false
+---
+
+Follow @docs/ai/browse.md for outcomes and done-when criteria.

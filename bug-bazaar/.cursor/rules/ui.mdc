@@ -1,0 +1,7 @@
+---
+description: Mandatory Ant Design and SCSS UI standards for The Bug Bazaar
+globs: **/*.{tsx,scss}
+alwaysApply: false
+---
+
+Before creating or modifying any UI, read and follow @UI.md. These rules are mandatory.

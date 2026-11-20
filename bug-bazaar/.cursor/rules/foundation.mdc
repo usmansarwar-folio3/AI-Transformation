@@ -1,0 +1,7 @@
+---
+description: Day 1 foundation tasks — setup, API contract, TypeScript, data layer
+globs: src/api/**,src/types/**
+alwaysApply: false
+---
+
+Follow @docs/ai/foundation.md for outcomes and done-when criteria.
