@@ -1,0 +1,35 @@
+@use '../../styles/variables' as *;
+
+.product-card {
+  height: 100%;
+  background: $color-bg-container;
+  border-radius: $border-radius;
+}
+
+.product-card:focus-visible {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+.product-card__image {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  background: $color-bg-layout;
+}
+
+.product-card__body {
+  width: 100%;
+}
+
+.product-card__name {
+  color: $color-text;
+}
+
+.product-card__price {
+  color: $color-primary;
+}
+
+.product-card__stock {
+  color: $color-text-secondary;
+}

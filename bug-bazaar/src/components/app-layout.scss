@@ -1,0 +1,29 @@
+@use '../styles/variables' as *;
+
+.app-layout {
+  min-height: 100vh;
+  background: $color-bg-layout;
+}
+
+.app-layout__header {
+  display: flex;
+  align-items: center;
+  background: $color-bg-container;
+}
+
+.app-layout__brand {
+  padding-inline: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.app-layout__content {
+  padding: 24px;
+}
+
+.app-layout__footer {
+  text-align: center;
+  color: $color-text-secondary;
+  background: $color-bg-layout;
+}

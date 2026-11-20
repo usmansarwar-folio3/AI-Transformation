@@ -10,7 +10,7 @@ Record library and technique choices here: what you used, what else you consider
 | Runtime validation | Zod | Manual type guards | Shared schemas for `Product` and `ApiError` at the API boundary. |
 | Server cache (planned) | TanStack Query | Hand-written `useEffect` cache | Covers D3-5 reuse and stock refresh, D2 UI states, abort, and latest-query-wins. |
 | Client state (planned) | Redux Toolkit | Context only | Tracker row D3-1; cart and session are client state. |
-| Routing (planned) | React Router | Manual history | URL-backed filters (D2-2). |
+| Routing | React Router | Manual history / Next-style file routes | Needed for list + details now; URL filter sync comes in D2-2. |
 | UI library | Ant Design + SCSS (BEM) | Raw HTML/CSS | Mandatory project standard in `UI.md`. |
 
 ## D1-2 HTTP and API contracts
@@ -37,3 +37,11 @@ Record library and technique choices here: what you used, what else you consider
 | Enforce “no fetch in components” | ESLint `no-restricted-globals` / `no-restricted-imports` for everything under `src/` except `client.ts` | Convention-only README note | Prevents accidental `fetch`/`axios` when Day 2/3 UI lands. |
 | Auth storage | In-memory token via `setAuthToken` / `getAuthToken` / `logout` | `localStorage`, cookies | Credentials must not persist; cart persistence later is separate and non-credential. |
 | Cancellation | Optional `AbortSignal` on reads (and mutations for symmetry) | Always-on timeout wrapper | Day 2 product switching and search races need cancel without inventing a second HTTP stack. |
+
+## D2-1 Product list
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Routing | `react-router-dom` with `/` list and `/products/:productId` details | Window location only, hash routes | Clean list/details navigation without inventing a router; filter query sync deferred to D2-2. |
+| Price display | `formatPriceFromCents` in `src/utils/formatPrice.ts` | Format inside the API client | Keeps cents in the data layer; dollars only at the display boundary. |
+| Keyboard grid | Focusable Ant Design `Card` (`tabIndex={0}`, Enter/Space) | Raw `<a>` wrappers, mouse-only `onClick` | Meets “grid works with a keyboard” without leaving Ant Design for the card chrome. |

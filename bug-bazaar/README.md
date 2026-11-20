@@ -37,6 +37,13 @@ In development, MSW serves the shared contract from `src/mocks/` (5,000 seeded p
 
 Demo login: any email, password `password`.
 
+## Routes (D2-1)
+
+| Path | Page |
+| --- | --- |
+| `/` | Product list (first page from the mock) |
+| `/products/:productId` | Product details |
+
 ## Project layout
 
 - `src/api/` — typed HTTP client (`client.ts` is the only `fetch` call site), Zod schemas, `RequestStatus`

@@ -1,0 +1,31 @@
+@use '../../styles/variables' as *;
+
+.product-details-page__back {
+  padding-inline: 0;
+}
+
+.product-details-page__image {
+  width: 100%;
+  max-height: 360px;
+  object-fit: cover;
+  background: $color-bg-layout;
+  border-radius: $border-radius;
+}
+
+.product-details-page__title {
+  margin: 0;
+  color: $color-text;
+}
+
+.product-details-page__price {
+  font-size: 1.25rem;
+  color: $color-primary;
+}
+
+.product-details-page__stock {
+  color: $color-text;
+}
+
+.product-details-page__category {
+  color: $color-text-secondary;
+}

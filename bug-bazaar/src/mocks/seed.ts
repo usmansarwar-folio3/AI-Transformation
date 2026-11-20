@@ -23,7 +23,7 @@ export function createProductCatalog(): Product[] {
       category,
       stock: isOutOfStock ? 0 : (n % 40) + 1,
       rating: Number(((n % 50) / 10).toFixed(1)),
-      imageUrl: `/images/${category}-${(n % 10) + 1}.png`,
+      imageUrl: `https://placehold.co/400x300/png?text=${encodeURIComponent(`${titleCase(category)}+${n}`)}`,
     }
   })
 

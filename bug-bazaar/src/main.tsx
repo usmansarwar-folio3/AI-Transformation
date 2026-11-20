@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd'
+import { BrowserRouter } from 'react-router-dom'
 import { themeConfig } from './theme/themeConfig'
 import App from './App.tsx'
 import './styles/global.scss'
@@ -26,7 +27,9 @@ void enableMockApi().then(() => {
   createRoot(rootElement).render(
     <StrictMode>
       <ConfigProvider theme={themeConfig}>
-        <App />
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
       </ConfigProvider>
     </StrictMode>,
   )

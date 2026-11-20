@@ -1,0 +1,16 @@
+@use '../../styles/variables' as *;
+
+.product-list-page__title {
+  margin-bottom: 0;
+  color: $color-text;
+}
+
+.product-list-page__hint {
+  color: $color-text-secondary;
+}
+
+.product-list-page__spin {
+  display: block;
+  padding: 48px 0;
+  text-align: center;
+}
