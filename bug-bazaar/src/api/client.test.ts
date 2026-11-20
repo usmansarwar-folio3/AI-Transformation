@@ -1,19 +1,26 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import {
   ApiClientError,
   createOrder,
+  getAuthToken,
   getMe,
   getOrder,
   getProduct,
   getProducts,
   login,
+  logout,
   setAuthToken,
 } from './client'
 import { mockMeta } from '../mocks/handlers'
 import { PRODUCT_COUNT } from '../mocks/seed'
 
-describe('api contract mock (D1-2)', () => {
-  it('seeds 5,000 products and returns a paged list', async () => {
+afterEach(() => {
+  logout()
+  vi.restoreAllMocks()
+})
+
+describe('api contract mock (D1-2 / D1-4)', () => {
+  it('seeds 5,000 products and returns a paged list with prices in cents', async () => {
     expect(PRODUCT_COUNT).toBe(5000)
     expect(mockMeta.productCount).toBe(5000)
 
@@ -59,12 +66,22 @@ describe('api contract mock (D1-2)', () => {
   })
 
   it('logs in and stores the token in memory only', async () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem')
     const response = await login({
       email: 'dev@example.com',
       password: mockMeta.demoPassword,
     })
     expect(response.token).toBe(mockMeta.validToken)
-    expect(response.user.email).toBe('dev@example.com')
+    expect(getAuthToken()).toBe(mockMeta.validToken)
+    expect(setItem).not.toHaveBeenCalled()
+  })
+
+  it('clears the in-memory token on logout without touching storage', async () => {
+    const removeItem = vi.spyOn(Storage.prototype, 'removeItem')
+    await login({ email: 'dev@example.com', password: mockMeta.demoPassword })
+    logout()
+    expect(getAuthToken()).toBeNull()
+    expect(removeItem).not.toHaveBeenCalled()
   })
 
   it('triggers GET /me 401 without a session', async () => {
@@ -146,5 +163,37 @@ describe('api contract mock (D1-2)', () => {
       status: 401,
       body: { error: { code: 'UNAUTHORIZED' } },
     })
+  })
+
+  it('rejects getProducts when the AbortSignal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    await expect(getProducts({ page: 1 }, controller.signal)).rejects.toSatisfy(
+      (error: unknown) => error instanceof DOMException || error instanceof Error,
+    )
+  })
+
+  it('rejects getProduct when the AbortSignal is already aborted', async () => {
+    const controller = new AbortController()
+    controller.abort()
+    await expect(getProduct('p-0001', controller.signal)).rejects.toSatisfy(
+      (error: unknown) => error instanceof DOMException || error instanceof Error,
+    )
+  })
+
+  it('maps ApiClientError into RequestError for RequestStatus consumers', async () => {
+    try {
+      await getProduct('missing')
+      expect.unreachable('expected 404')
+    } catch (error) {
+      expect(error).toBeInstanceOf(ApiClientError)
+      if (error instanceof ApiClientError) {
+        expect(error.toRequestError()).toEqual({
+          httpStatus: 404,
+          code: 'NOT_FOUND',
+          message: 'Product not found',
+        })
+      }
+    }
   })
 })

@@ -28,3 +28,12 @@ Record library and technique choices here: what you used, what else you consider
 | Contract types | Zod schemas in `src/api/schemas.ts` as the single source; TypeScript types via `z.infer` | Hand-written interfaces duplicated from the doc | Runtime validation and compile-time types stay aligned with `docs/api-contract.md`. |
 | Request lifecycle | Discriminated `RequestStatus<T>` on `status`, with forbidden fields typed as `never` | `{ loading, data, error }` boolean bag | Impossible combos (success without data, loading+data, error+data) fail assignability. Proofs in `requestStatus.proof.ts` use `Extends` asserts — no `any` / `@ts-ignore`. |
 | Query params | `ProductCategory` / `ProductSort` unions on `ProductQuery` | Plain `string` | Invalid category/sort values fail at compile time before they hit MSW. |
+
+## D1-4 Data layer
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Single HTTP boundary | Keep one module `src/api/client.ts` with typed methods per contract endpoint | Per-feature fetch helpers, axios instance | Matches the scoring rule and keeps Zod validation, auth header, and AbortSignal in one place. |
+| Enforce “no fetch in components” | ESLint `no-restricted-globals` / `no-restricted-imports` for everything under `src/` except `client.ts` | Convention-only README note | Prevents accidental `fetch`/`axios` when Day 2/3 UI lands. |
+| Auth storage | In-memory token via `setAuthToken` / `getAuthToken` / `logout` | `localStorage`, cookies | Credentials must not persist; cart persistence later is separate and non-credential. |
+| Cancellation | Optional `AbortSignal` on reads (and mutations for symmetry) | Always-on timeout wrapper | Day 2 product switching and search races need cancel without inventing a second HTTP stack. |

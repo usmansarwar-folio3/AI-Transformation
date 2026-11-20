@@ -39,7 +39,7 @@ Demo login: any email, password `password`.
 
 ## Project layout
 
-- `src/api/` — typed HTTP client and Zod schemas (only place that calls `fetch`)
+- `src/api/` — typed HTTP client (`client.ts` is the only `fetch` call site), Zod schemas, `RequestStatus`
 - `src/mocks/` — MSW handlers and product seed
 - `src/theme/` — Ant Design ConfigProvider tokens
 - `src/styles/` — shared SCSS variables

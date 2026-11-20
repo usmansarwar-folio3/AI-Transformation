@@ -76,9 +76,21 @@ These controls are for the MSW mock only. They are not part of a real backend.
 | 401 | `GET /api/orders/:id` | Call without a Bearer token |
 | 404 | `GET /api/orders/:id` | Unknown order id, e.g. `missing` |
 
-## Client boundary
+## Client boundary (D1-4)
 
-The typed client in `src/api/client.ts` is the only place that calls `fetch`. Zod schemas in `src/api/schemas.ts` validate success and error payloads at the boundary. Components must not call `fetch` or `axios` directly.
+The typed client in `src/api/client.ts` is the only place that calls `fetch`. Prefer importing from `src/api` (barrel) or `src/api/client`.
+
+| Method | Endpoint |
+| --- | --- |
+| `getProducts(query?, signal?)` | `GET /api/products` |
+| `getProduct(id, signal?)` | `GET /api/products/:id` |
+| `login(input, signal?)` | `POST /api/login` |
+| `getMe(signal?)` | `GET /api/me` |
+| `createOrder(input, signal?)` | `POST /api/orders` |
+| `getOrder(id, signal?)` | `GET /api/orders/:id` |
+| `logout()` / `getAuthToken()` / `setAuthToken()` | in-memory session helpers |
+
+Zod schemas in `src/api/schemas.ts` validate success and error payloads at the boundary. Components must not call `fetch` or `axios` directly (ESLint enforces this outside `client.ts`).
 
 ## Request status (D1-3)
 

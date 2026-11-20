@@ -1,0 +1,36 @@
+/**
+ * Public data-layer entry. Prefer importing from here (or `./client`) in
+ * components and hooks — never call `fetch` / `axios` directly.
+ */
+export {
+  ApiClientError,
+  createOrder,
+  failure,
+  getAuthToken,
+  getMe,
+  getOrder,
+  getProduct,
+  getProducts,
+  idle,
+  isError,
+  isIdle,
+  isLoading,
+  isSuccess,
+  loading,
+  login,
+  logout,
+  requestErrorFromApi,
+  setAuthToken,
+  success,
+  type ApiError,
+  type CreateOrderInput,
+  type LoginInput,
+  type Product,
+  type ProductCategory,
+  type ProductList,
+  type ProductQuery,
+  type ProductSort,
+  type RequestError,
+  type RequestStatus,
+  type User,
+} from './client'

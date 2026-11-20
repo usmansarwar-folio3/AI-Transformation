@@ -23,4 +23,30 @@ export default defineConfig([
       },
     },
   },
+  {
+    files: ['src/**/*.{ts,tsx}'],
+    ignores: ['src/api/client.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'fetch',
+          message:
+            'D1-4: call the typed client in src/api/client.ts — do not use fetch outside that file.',
+        },
+      ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: 'axios',
+              message:
+                'D1-4: call the typed client in src/api/client.ts — axios is not used in this project.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 ])

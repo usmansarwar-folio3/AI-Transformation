@@ -1,3 +1,9 @@
+/**
+ * Typed HTTP boundary for The Bug Bazaar (D1-4).
+ * This is the only module allowed to call `fetch`. Components and hooks must
+ * import these methods instead of talking to the network directly.
+ */
+import type { ZodType } from 'zod'
 import {
   apiErrorSchema,
   loginResponseSchema,
@@ -34,7 +40,7 @@ export {
 
 const DEFAULT_BASE_URL = '/api'
 
-/** Auth token stays in memory only — never localStorage. */
+/** Auth token stays in memory only — never localStorage / sessionStorage. */
 let authToken: string | null = null
 
 export function setAuthToken(token: string | null): void {
@@ -43,6 +49,10 @@ export function setAuthToken(token: string | null): void {
 
 export function getAuthToken(): string | null {
   return authToken
+}
+
+export function logout(): void {
+  authToken = null
 }
 
 export class ApiClientError extends Error {
@@ -95,13 +105,15 @@ async function parseJson(response: Response): Promise<unknown> {
 
 async function request<T>(
   path: string,
-  schema: { parse: (data: unknown) => T },
+  schema: ZodType<T>,
   init: RequestInit = {},
 ): Promise<T> {
   const headers = new Headers(init.headers)
-  if (!headers.has('Content-Type') && init.body) {
+
+  if (!headers.has('Content-Type') && init.body !== undefined && init.body !== null) {
     headers.set('Content-Type', 'application/json')
   }
+
   if (authToken) {
     headers.set('Authorization', `Bearer ${authToken}`)
   }
@@ -121,6 +133,7 @@ async function request<T>(
   return schema.parse(payload)
 }
 
+/** GET /api/products — prices remain in cents. */
 export function getProducts(
   query: ProductQuery = {},
   signal?: AbortSignal,
@@ -135,24 +148,32 @@ export function getProducts(
   return request(`/products${qs ? `?${qs}` : ''}`, productListSchema, { signal })
 }
 
+/** GET /api/products/:id */
 export function getProduct(id: string, signal?: AbortSignal): Promise<Product> {
   return request(`/products/${encodeURIComponent(id)}`, productSchema, { signal })
 }
 
-export async function login(input: LoginInput): Promise<LoginResponse> {
+/** POST /api/login — stores token in memory on success. */
+export async function login(input: LoginInput, signal?: AbortSignal): Promise<LoginResponse> {
   const result = await request('/login', loginResponseSchema, {
     method: 'POST',
     body: JSON.stringify(input),
+    signal,
   })
   setAuthToken(result.token)
   return result
 }
 
+/** GET /api/me */
 export function getMe(signal?: AbortSignal): Promise<User> {
   return request('/me', userSchema, { signal })
 }
 
-export function createOrder(input: CreateOrderInput): Promise<OrderCreated> {
+/** POST /api/orders — sends idempotency key so retries can be safe later (D3-2). */
+export function createOrder(
+  input: CreateOrderInput,
+  signal?: AbortSignal,
+): Promise<OrderCreated> {
   return request('/orders', orderCreatedSchema, {
     method: 'POST',
     body: JSON.stringify({
@@ -162,13 +183,11 @@ export function createOrder(input: CreateOrderInput): Promise<OrderCreated> {
     headers: {
       'Idempotency-Key': input.idempotencyKey,
     },
+    signal,
   })
 }
 
+/** GET /api/orders/:id */
 export function getOrder(id: string, signal?: AbortSignal): Promise<OrderStatus> {
   return request(`/orders/${encodeURIComponent(id)}`, orderStatusSchema, { signal })
-}
-
-export function logout(): void {
-  setAuthToken(null)
 }
