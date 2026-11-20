@@ -76,6 +76,8 @@ export type ProductQuery = {
   category?: ProductCategory
   sort?: ProductSort
   page?: number
+  /** When true, only products with stock > 0. Documented mock/API query extension (D2-2). */
+  inStock?: boolean
   /** Mock-only control documented in docs/api-contract.md. Not part of the real API. */
   forceError?: 500
 }
@@ -143,6 +145,7 @@ export function getProducts(
   if (query.category) params.set('category', query.category)
   if (query.sort) params.set('sort', query.sort)
   if (query.page !== undefined) params.set('page', String(query.page))
+  if (query.inStock) params.set('inStock', 'true')
   if (query.forceError !== undefined) params.set('forceError', String(query.forceError))
   const qs = params.toString()
   return request(`/products${qs ? `?${qs}` : ''}`, productListSchema, { signal })

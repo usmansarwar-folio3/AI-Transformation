@@ -34,7 +34,7 @@ type ApiError = {
 
 | Method | Endpoint | Success | Errors |
 | --- | --- | --- | --- |
-| GET | `/api/products?search=&category=&sort=&page=` | 200 `{ items: Product[], total: number }` | 500 |
+| GET | `/api/products?search=&category=&sort=&page=&inStock=` | 200 `{ items: Product[], total: number }` | 500 |
 | GET | `/api/products/:id` | 200 `Product` | 404 |
 | POST | `/api/login` | 200 `{ token, user }` | 400, 401 |
 | GET | `/api/me` | 200 `User` | 401 |
@@ -47,6 +47,7 @@ type ApiError = {
 - `category` — one of `keyboards` \| `ducks` \| `coffee` \| `stickers`
 - `sort` — `price-asc` \| `price-desc` \| `name-asc` \| `rating-desc`
 - `page` — 1-based page; page size is **20**
+- `inStock` — when `true`, only products with `stock > 0` (D2-2 extension; same endpoint, filtered `total`)
 
 ### Auth and orders
 

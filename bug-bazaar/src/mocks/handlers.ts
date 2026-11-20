@@ -52,6 +52,7 @@ function filterProducts(url: URL): { items: Product[]; total: number } {
   const search = url.searchParams.get('search')?.trim().toLowerCase() ?? ''
   const category = url.searchParams.get('category')?.trim() ?? ''
   const sort = url.searchParams.get('sort')?.trim() ?? ''
+  const inStockOnly = url.searchParams.get('inStock') === 'true'
   const page = Math.max(1, Number(url.searchParams.get('page') ?? '1') || 1)
 
   let items = productCatalog.slice()
@@ -62,6 +63,10 @@ function filterProducts(url: URL): { items: Product[]; total: number } {
 
   if (category) {
     items = items.filter((product) => product.category === category)
+  }
+
+  if (inStockOnly) {
+    items = items.filter((product) => product.stock > 0)
   }
 
   switch (sort) {

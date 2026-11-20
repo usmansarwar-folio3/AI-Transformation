@@ -41,8 +41,10 @@ Demo login: any email, password `password`.
 
 | Path | Page |
 | --- | --- |
-| `/` | Product list (first page from the mock) |
+| `/` | Product list (filters in the query string) |
 | `/products/:productId` | Product details |
+
+List filters use URL params: `search`, `category`, `sort`, `inStock=true`, `page`.
 
 ## Project layout
 

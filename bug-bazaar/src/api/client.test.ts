@@ -31,6 +31,17 @@ describe('api contract mock (D1-2 / D1-4)', () => {
     expect(Number.isInteger(result.items[0]?.price)).toBe(true)
   })
 
+  it('filters in-stock products server-side and returns the filtered total', async () => {
+    const all = await getProducts({ page: 1 })
+    const inStock = await getProducts({ page: 1, inStock: true })
+
+    expect(inStock.total).toBeLessThan(all.total)
+    expect(inStock.items.every((product) => product.stock > 0)).toBe(true)
+    expect(inStock.items.some((product) => product.id === mockMeta.outOfStockProductId)).toBe(
+      false,
+    )
+  })
+
   it('fetches a single product by id', async () => {
     const product = await getProduct('p-0001')
     expect(product.id).toBe('p-0001')

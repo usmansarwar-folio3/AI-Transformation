@@ -45,3 +45,11 @@ Record library and technique choices here: what you used, what else you consider
 | Routing | `react-router-dom` with `/` list and `/products/:productId` details | Window location only, hash routes | Clean list/details navigation without inventing a router; filter query sync deferred to D2-2. |
 | Price display | `formatPriceFromCents` in `src/utils/formatPrice.ts` | Format inside the API client | Keeps cents in the data layer; dollars only at the display boundary. |
 | Keyboard grid | Focusable Ant Design `Card` (`tabIndex={0}`, Enter/Space) | Raw `<a>` wrappers, mouse-only `onClick` | Meets “grid works with a keyboard” without leaving Ant Design for the card chrome. |
+
+## D2-2 Filters
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| URL sync | React Router `useSearchParams` as source of truth (`search`, `category`, `sort`, `inStock`, `page`) | Local React state + optional sync | Refresh, copy-link, and Back/Forward restore the same view without a second store. |
+| In-stock filter | Extend `GET /api/products` with `inStock=true` in mock + client | Client-only filter of the current 20-item page | Keeps `total` honest across the full catalog; no new endpoint. |
+| Search commit | `Input.Search` writes the URL on Search/Enter (not every keystroke) | Debounced URL updates (later D2-5/D2-6) | Avoids flooding history while still making the committed query shareable. |
