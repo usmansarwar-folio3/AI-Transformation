@@ -31,9 +31,16 @@ Copy `.env.example` to `.env` if you need local overrides. Only public values be
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | Base URL for the mock API | `/api` |
 
+## Mock API
+
+In development, MSW serves the shared contract from `src/mocks/` (5,000 seeded products). See `docs/api-contract.md` for shapes, status codes, and how to trigger each listed error on purpose.
+
+Demo login: any email, password `password`.
+
 ## Project layout
 
 - `src/api/` — typed HTTP client and Zod schemas (only place that calls `fetch`)
+- `src/mocks/` — MSW handlers and product seed
 - `src/theme/` — Ant Design ConfigProvider tokens
 - `src/styles/` — shared SCSS variables
 - `src/features/` — feature modules (browse, cart, auth) as they are built

@@ -12,3 +12,11 @@ Record library and technique choices here: what you used, what else you consider
 | Client state (planned) | Redux Toolkit | Context only | Tracker row D3-1; cart and session are client state. |
 | Routing (planned) | React Router | Manual history | URL-backed filters (D2-2). |
 | UI library | Ant Design + SCSS (BEM) | Raw HTML/CSS | Mandatory project standard in `UI.md`. |
+
+## D1-2 HTTP and API contracts
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Mock API | MSW 3 with shared handlers in `src/mocks/` | json-server, custom Express mock, in-memory Vite middleware | Same handlers for Vitest (`msw/node`) and the Vite app (`msw/vite` + `virtual:msw`). No separate backend process. |
+| Product seed | Deterministic 5,000-item in-memory catalog | Lazy generation per request, JSON fixture file | Fast, stable ids (`p-0001`…`p-5000`), easy 409 via `p-0002` with `stock: 0`. |
+| Error triggers | Documented mock controls (`forceError`, bad credentials, out-of-stock id) | Always-random failures | Evaluators and tests can hit every listed status on purpose without guessing. |

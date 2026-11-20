@@ -1,6 +1,8 @@
 import '@testing-library/jest-dom/vitest'
 import { afterAll, afterEach, beforeAll } from 'vitest'
-import { server } from './msw/server'
+import { resetMockOrders } from '../mocks/handlers'
+import { server } from '../mocks/node'
+import { logout } from '../api/client'
 
 beforeAll(() => {
   server.listen({ onUnhandledFrame: 'error' })
@@ -8,6 +10,8 @@ beforeAll(() => {
 
 afterEach(() => {
   server.resetHandlers()
+  resetMockOrders()
+  logout()
 })
 
 afterAll(() => {

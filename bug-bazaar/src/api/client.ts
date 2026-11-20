@@ -45,6 +45,8 @@ export type ProductQuery = {
   category?: string
   sort?: string
   page?: number
+  /** Mock-only control documented in docs/api-contract.md. Not part of the real API. */
+  forceError?: 500
 }
 
 export type LoginInput = {
@@ -107,6 +109,7 @@ export function getProducts(
   if (query.category) params.set('category', query.category)
   if (query.sort) params.set('sort', query.sort)
   if (query.page !== undefined) params.set('page', String(query.page))
+  if (query.forceError !== undefined) params.set('forceError', String(query.forceError))
   const qs = params.toString()
   return request(`/products${qs ? `?${qs}` : ''}`, productListSchema, { signal })
 }

@@ -1,48 +1,150 @@
-import { afterEach, describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
   ApiClientError,
+  createOrder,
+  getMe,
+  getOrder,
   getProduct,
   getProducts,
   login,
-  logout,
   setAuthToken,
 } from './client'
+import { mockMeta } from '../mocks/handlers'
+import { PRODUCT_COUNT } from '../mocks/seed'
 
-afterEach(() => {
-  logout()
-})
+describe('api contract mock (D1-2)', () => {
+  it('seeds 5,000 products and returns a paged list', async () => {
+    expect(PRODUCT_COUNT).toBe(5000)
+    expect(mockMeta.productCount).toBe(5000)
 
-describe('api client', () => {
-  it('fetches and validates a product list', async () => {
-    const result = await getProducts()
-    expect(result.total).toBe(1)
-    expect(result.items[0]?.name).toBe('Rubber Duck')
-    expect(result.items[0]?.price).toBe(999)
+    const result = await getProducts({ page: 1 })
+    expect(result.total).toBe(PRODUCT_COUNT)
+    expect(result.items).toHaveLength(mockMeta.pageSize)
+    expect(result.items[0]?.id).toBe('p-0001')
+    expect(Number.isInteger(result.items[0]?.price)).toBe(true)
   })
 
   it('fetches a single product by id', async () => {
-    const product = await getProduct('p-1')
-    expect(product.id).toBe('p-1')
-    expect(product.category).toBe('ducks')
+    const product = await getProduct('p-0001')
+    expect(product.id).toBe('p-0001')
+    expect(product.category).toBe('keyboards')
   })
 
-  it('maps a 404 into ApiClientError', async () => {
-    await expect(getProduct('missing')).rejects.toBeInstanceOf(ApiClientError)
-    try {
-      await getProduct('missing')
-    } catch (error) {
-      expect(error).toBeInstanceOf(ApiClientError)
-      if (error instanceof ApiClientError) {
-        expect(error.status).toBe(404)
-        expect(error.body?.error.code).toBe('NOT_FOUND')
-      }
-    }
+  it('triggers GET /products 500 with forceError', async () => {
+    await expect(getProducts({ forceError: 500 })).rejects.toMatchObject({
+      status: 500,
+      body: { error: { code: 'INTERNAL' } },
+    } satisfies Partial<ApiClientError>)
   })
 
-  it('stores the auth token in memory after login', async () => {
-    const response = await login({ email: 'dev@example.com', password: 'secret' })
-    expect(response.token).toBe('test-token')
-    setAuthToken(response.token)
+  it('triggers GET /products/:id 404 for unknown ids', async () => {
+    await expect(getProduct('missing')).rejects.toMatchObject({
+      status: 404,
+      body: { error: { code: 'NOT_FOUND' } },
+    })
+  })
+
+  it('triggers POST /login 400 when fields are missing', async () => {
+    await expect(login({ email: '', password: '' })).rejects.toMatchObject({
+      status: 400,
+      body: { error: { code: 'VALIDATION' } },
+    })
+  })
+
+  it('triggers POST /login 401 for bad credentials', async () => {
+    await expect(login({ email: 'dev@example.com', password: 'wrong' })).rejects.toMatchObject({
+      status: 401,
+      body: { error: { code: 'UNAUTHORIZED' } },
+    })
+  })
+
+  it('logs in and stores the token in memory only', async () => {
+    const response = await login({
+      email: 'dev@example.com',
+      password: mockMeta.demoPassword,
+    })
+    expect(response.token).toBe(mockMeta.validToken)
     expect(response.user.email).toBe('dev@example.com')
+  })
+
+  it('triggers GET /me 401 without a session', async () => {
+    await expect(getMe()).rejects.toMatchObject({
+      status: 401,
+      body: { error: { code: 'UNAUTHORIZED' } },
+    })
+  })
+
+  it('returns the current user when authenticated', async () => {
+    await login({ email: 'dev@example.com', password: mockMeta.demoPassword })
+    const me = await getMe()
+    expect(me.id).toBe('u-1')
+  })
+
+  it('triggers POST /orders 401 without a session', async () => {
+    await expect(
+      createOrder({
+        items: [{ productId: 'p-0001', quantity: 1 }],
+        idempotencyKey: 'key-401',
+      }),
+    ).rejects.toMatchObject({
+      status: 401,
+      body: { error: { code: 'UNAUTHORIZED' } },
+    })
+  })
+
+  it('triggers POST /orders 400 for an empty cart', async () => {
+    await login({ email: 'dev@example.com', password: mockMeta.demoPassword })
+    await expect(
+      createOrder({ items: [], idempotencyKey: 'key-400' }),
+    ).rejects.toMatchObject({
+      status: 400,
+      body: { error: { code: 'VALIDATION' } },
+    })
+  })
+
+  it('triggers POST /orders 409 when stock is insufficient', async () => {
+    await login({ email: 'dev@example.com', password: mockMeta.demoPassword })
+    await expect(
+      createOrder({
+        items: [{ productId: mockMeta.outOfStockProductId, quantity: 1 }],
+        idempotencyKey: 'key-409',
+      }),
+    ).rejects.toMatchObject({
+      status: 409,
+      body: {
+        error: {
+          code: 'OUT_OF_STOCK',
+          details: { productId: mockMeta.outOfStockProductId },
+        },
+      },
+    })
+  })
+
+  it('creates an order and fetches it by id', async () => {
+    await login({ email: 'dev@example.com', password: mockMeta.demoPassword })
+    const created = await createOrder({
+      items: [{ productId: 'p-0001', quantity: 1 }],
+      idempotencyKey: 'key-ok',
+    })
+    expect(created.status).toBe('queued')
+
+    const fetched = await getOrder(created.id)
+    expect(fetched.id).toBe(created.id)
+    expect(fetched.status).toBe('queued')
+  })
+
+  it('triggers GET /orders/:id 404 for unknown orders', async () => {
+    setAuthToken(mockMeta.validToken)
+    await expect(getOrder('missing')).rejects.toMatchObject({
+      status: 404,
+      body: { error: { code: 'NOT_FOUND' } },
+    })
+  })
+
+  it('triggers GET /orders/:id 401 without a session', async () => {
+    await expect(getOrder('o-1')).rejects.toMatchObject({
+      status: 401,
+      body: { error: { code: 'UNAUTHORIZED' } },
+    })
   })
 })
