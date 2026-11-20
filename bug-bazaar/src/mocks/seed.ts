@@ -1,8 +1,9 @@
+import { PRODUCTS_PAGE_SIZE } from '../api/pagination'
 import type { Product } from '../api/schemas'
 import { productCategorySchema } from '../api/schemas'
 
 export const PRODUCT_COUNT = 5000
-export const PRODUCTS_PAGE_SIZE = 20
+export { PRODUCTS_PAGE_SIZE }
 
 const CATEGORIES = productCategorySchema.options
 

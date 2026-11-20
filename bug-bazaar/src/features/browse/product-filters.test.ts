@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
   clearProductFilters,
+  formatProductResultRange,
   hasActiveProductFilters,
   parseProductFilters,
+  PRODUCTS_PAGE_SIZE,
   productFiltersToSearchParams,
   toProductQuery,
 } from './productFilters'
@@ -66,5 +68,12 @@ describe('productFilters URL sync', () => {
     const cleared = clearProductFilters()
     expect(hasActiveProductFilters(cleared)).toBe(false)
     expect(productFiltersToSearchParams(cleared).toString()).toBe('')
+  })
+
+  it('formats the visible result range for the current page', () => {
+    expect(formatProductResultRange(1, PRODUCTS_PAGE_SIZE, 5000)).toBe('Showing 1–20 of 5000')
+    expect(formatProductResultRange(2, PRODUCTS_PAGE_SIZE, 5000)).toBe('Showing 21–40 of 5000')
+    expect(formatProductResultRange(250, PRODUCTS_PAGE_SIZE, 5000)).toBe('Showing 4981–5000 of 5000')
+    expect(formatProductResultRange(1, PRODUCTS_PAGE_SIZE, 0)).toBe('Showing 0 results')
   })
 })

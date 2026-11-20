@@ -1,7 +1,9 @@
 import { Button, Col, Input, Row, Select, Space, Switch, Typography } from 'antd'
 import type { ProductCategory, ProductSort } from '../../api'
 import {
+  formatProductResultRange,
   PRODUCT_CATEGORY_OPTIONS,
+  PRODUCTS_PAGE_SIZE,
   PRODUCT_SORT_OPTIONS,
   type ProductListFilters,
 } from './productFilters'
@@ -98,7 +100,9 @@ export function ProductFilters({
 
       <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
         <Text className="product-filters__count">
-          {total === null ? 'Loading results…' : `${total} result${total === 1 ? '' : 's'}`}
+          {total === null
+            ? 'Loading results…'
+            : formatProductResultRange(filters.page, PRODUCTS_PAGE_SIZE, total)}
         </Text>
       </Col>
     </Row>

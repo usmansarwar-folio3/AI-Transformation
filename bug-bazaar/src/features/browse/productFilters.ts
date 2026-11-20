@@ -1,5 +1,8 @@
 import type { ProductCategory, ProductQuery, ProductSort } from '../../api'
+import { PRODUCTS_PAGE_SIZE } from '../../api/pagination'
 import { productCategorySchema, productSortSchema } from '../../api/schemas'
+
+export { PRODUCTS_PAGE_SIZE }
 
 export type ProductListFilters = {
   search: string
@@ -93,3 +96,14 @@ export const PRODUCT_SORT_OPTIONS: Array<{ value: ProductSort; label: string }> 
   { value: 'name-asc', label: 'Name: A–Z' },
   { value: 'rating-desc', label: 'Rating: high to low' },
 ]
+
+/** Display-layer range copy, e.g. “Showing 1–20 of 5000”. */
+export function formatProductResultRange(page: number, pageSize: number, total: number): string {
+  if (total <= 0) {
+    return 'Showing 0 results'
+  }
+
+  const start = (page - 1) * pageSize + 1
+  const end = Math.min(page * pageSize, total)
+  return `Showing ${start}–${end} of ${total}`
+}

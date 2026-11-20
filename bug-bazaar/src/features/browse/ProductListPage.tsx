@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Col, Row, Typography } from 'antd'
+import { Col, Pagination, Row, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 import {
   ApiClientError,
@@ -18,6 +18,7 @@ import {
   clearProductFilters,
   hasActiveProductFilters,
   parseProductFilters,
+  PRODUCTS_PAGE_SIZE,
   productFiltersToSearchParams,
   toProductQuery,
   type ProductListFilters,
@@ -39,6 +40,7 @@ type ProductListBodyProps = {
   onCategoryChange: (category: ProductListFilters['category']) => void
   onSortChange: (sort: ProductListFilters['sort']) => void
   onInStockChange: (inStock: boolean) => void
+  onPageChange: (page: number) => void
   onClear: () => void
 }
 
@@ -51,6 +53,7 @@ function ProductListBody({
   onCategoryChange,
   onSortChange,
   onInStockChange,
+  onPageChange,
   onClear,
 }: ProductListBodyProps) {
   const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
@@ -128,6 +131,23 @@ function ProductListBody({
                 <ProductCard product={product} />
               </Col>
             ))}
+            {data.total > 0 ? (
+              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                <Pagination
+                  className="product-list-page__pagination"
+                  current={filters.page}
+                  pageSize={PRODUCTS_PAGE_SIZE}
+                  total={data.total}
+                  showSizeChanger={false}
+                  hideOnSinglePage={false}
+                  disabled={data.total === 0}
+                  aria-label="Product list pages"
+                  onChange={(page) => {
+                    onPageChange(page)
+                  }}
+                />
+              </Col>
+            ) : null}
           </>
         )}
       </AsyncStatusView>
@@ -154,6 +174,13 @@ export function ProductListPage() {
       ...filters,
       ...patch,
       page: 1,
+    })
+  }
+
+  function handlePageChange(page: number) {
+    replaceFilters({
+      ...filters,
+      page,
     })
   }
 
@@ -195,6 +222,7 @@ export function ProductListPage() {
         onInStockChange={(inStock) => {
           patchFilters({ inStock })
         }}
+        onPageChange={handlePageChange}
         onClear={handleClear}
       />
     </Row>

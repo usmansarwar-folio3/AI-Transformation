@@ -29,3 +29,16 @@ Use MSW; no real backend.
 - Tightened error shapes to match `ApiError` in the contract exactly
 - Made the seed deterministic so ids and the 409 case stay stable in tests
 - Limited mock enablement to DEV so production builds don’t start the worker
+
+## Product list pagination
+
+**Prompt:** Add numbered Ant Design Pagination on the product list; wire to URL `page`; “Showing X–Y of Z” copy; no infinite scroll / Load more; keep page size 20.
+
+**Kept:**
+- `Pagination` in success children only (`total > 0`); `current` / `pageSize` / `total` from filters + API
+- `handlePageChange` via `replaceFilters` (preserves other filters); `patchFilters` still resets `page` to 1
+- `formatProductResultRange` for count copy; `PRODUCTS_PAGE_SIZE` in `src/api/pagination.ts`
+
+**Changed and why:**
+- Shared page-size constant so mock, query, and range string stay aligned without inventing a new size
+- Range helper returns “Showing 0 results” when `total` is 0 so the filters bar never implies 5000 cards on screen

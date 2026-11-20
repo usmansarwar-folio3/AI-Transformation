@@ -61,3 +61,10 @@ Record library and technique choices here: what you used, what else you consider
 | Shared chrome | `AsyncStatusView` + `RequestStatus<T>` for list and details | Parallel `isLoading` / `errorMessage` booleans per page | One Spin / Empty / Alert+Retry look; impossible loading+error combos stay unrepresentable. |
 | Empty vs error | Empty only after `success` with no items; errors use `failure(...)` | Treating 404/empty as the same screen | Matches “no results” vs “failed request”; Retry re-fetches. |
 | Intentional triggers | URL `forceError=500` (list), `search=__none__` (empty), `/products/missing` (details 404) | Hidden debug menu | Evaluators can hit each state on purpose without extra UI. |
+
+## Product list pagination
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Pagination UI | Ant Design numbered `Pagination` (page size fixed at 20) | Infinite scroll / “Load more” | Matches the API’s `page` + `total`; keeps URL shareable; no Intersection Observer. |
+| Page size constant | `PRODUCTS_PAGE_SIZE` in `src/api/pagination.ts` | Hard-coding `20` in the UI only | Same value for mock, client queries, and range copy; changing it still requires api-contract + decisions. |
