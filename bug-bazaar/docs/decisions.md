@@ -20,3 +20,11 @@ Record library and technique choices here: what you used, what else you consider
 | Mock API | MSW 3 with shared handlers in `src/mocks/` | json-server, custom Express mock, in-memory Vite middleware | Same handlers for Vitest (`msw/node`) and the Vite app (`msw/vite` + `virtual:msw`). No separate backend process. |
 | Product seed | Deterministic 5,000-item in-memory catalog | Lazy generation per request, JSON fixture file | Fast, stable ids (`p-0001`…`p-5000`), easy 409 via `p-0002` with `stock: 0`. |
 | Error triggers | Documented mock controls (`forceError`, bad credentials, out-of-stock id) | Always-random failures | Evaluators and tests can hit every listed status on purpose without guessing. |
+
+## D1-3 TypeScript
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Contract types | Zod schemas in `src/api/schemas.ts` as the single source; TypeScript types via `z.infer` | Hand-written interfaces duplicated from the doc | Runtime validation and compile-time types stay aligned with `docs/api-contract.md`. |
+| Request lifecycle | Discriminated `RequestStatus<T>` on `status`, with forbidden fields typed as `never` | `{ loading, data, error }` boolean bag | Impossible combos (success without data, loading+data, error+data) fail assignability. Proofs in `requestStatus.proof.ts` use `Extends` asserts — no `any` / `@ts-ignore`. |
+| Query params | `ProductCategory` / `ProductSort` unions on `ProductQuery` | Plain `string` | Invalid category/sort values fail at compile time before they hit MSW. |

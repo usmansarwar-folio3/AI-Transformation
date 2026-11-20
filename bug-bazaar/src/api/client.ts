@@ -6,14 +6,31 @@ import {
   productListSchema,
   productSchema,
   userSchema,
-  type ApiErrorBody,
+  type ApiError,
   type LoginResponse,
   type OrderCreated,
   type OrderStatus,
   type Product,
+  type ProductCategory,
   type ProductList,
+  type ProductSort,
   type User,
 } from './schemas'
+import { requestErrorFromApi, type RequestError } from './requestStatus'
+
+export type { ApiError, Product, ProductCategory, ProductList, ProductSort, User }
+export type { RequestError, RequestStatus } from './requestStatus'
+export {
+  failure,
+  idle,
+  isError,
+  isIdle,
+  isLoading,
+  isSuccess,
+  loading,
+  requestErrorFromApi,
+  success,
+} from './requestStatus'
 
 const DEFAULT_BASE_URL = '/api'
 
@@ -30,20 +47,24 @@ export function getAuthToken(): string | null {
 
 export class ApiClientError extends Error {
   readonly status: number
-  readonly body: ApiErrorBody | null
+  readonly body: ApiError | null
 
-  constructor(status: number, body: ApiErrorBody | null, message?: string) {
+  constructor(status: number, body: ApiError | null, message?: string) {
     super(message ?? body?.error.message ?? `Request failed with status ${status}`)
     this.name = 'ApiClientError'
     this.status = status
     this.body = body
   }
+
+  toRequestError(): RequestError {
+    return requestErrorFromApi(this.status, this.body, this.message)
+  }
 }
 
 export type ProductQuery = {
   search?: string
-  category?: string
-  sort?: string
+  category?: ProductCategory
+  sort?: ProductSort
   page?: number
   /** Mock-only control documented in docs/api-contract.md. Not part of the real API. */
   forceError?: 500

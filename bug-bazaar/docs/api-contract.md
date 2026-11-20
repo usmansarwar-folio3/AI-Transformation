@@ -79,3 +79,17 @@ These controls are for the MSW mock only. They are not part of a real backend.
 ## Client boundary
 
 The typed client in `src/api/client.ts` is the only place that calls `fetch`. Zod schemas in `src/api/schemas.ts` validate success and error payloads at the boundary. Components must not call `fetch` or `axios` directly.
+
+## Request status (D1-3)
+
+Async UI state uses a discriminated union so impossible combinations cannot be typed:
+
+```ts
+type RequestStatus<T> =
+  | { status: 'idle'; data?: never; error?: never }
+  | { status: 'loading'; data?: never; error?: never }
+  | { status: 'success'; data: T; error?: never }
+  | { status: 'error'; error: RequestError; data?: never }
+```
+
+Forbidden fields are `never` so combinations like loading+data or success without data are not representable. See `src/api/requestStatus.ts` and `src/api/requestStatus.proof.ts`.
