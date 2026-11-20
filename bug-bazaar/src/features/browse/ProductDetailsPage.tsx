@@ -11,13 +11,11 @@ import {
   type RequestStatus,
 } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
+import { useBackToTop } from '../../hooks'
 import { formatPriceFromCents } from '../../utils/formatPrice'
 import './product-details-page.scss'
 
 const { Title, Text } = Typography
-
-/** Show Back to Top after the window scrolls past this many pixels. */
-const BACK_TO_TOP_SCROLL_THRESHOLD_PX = 240
 
 type ProductDetailsContentProps = {
   productId: string
@@ -27,7 +25,7 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
   const navigate = useNavigate()
   const [status, setStatus] = useState<RequestStatus<Product>>(loading())
   const [retryCount, setRetryCount] = useState(0)
-  const [showBackToTop, setShowBackToTop] = useState(false)
+  const { isVisible: showBackToTop, scrollToTop } = useBackToTop()
 
   useEffect(() => {
     const controller = new AbortController()
@@ -63,26 +61,9 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
     }
   }, [productId, retryCount])
 
-  useEffect(() => {
-    function handleScroll() {
-      setShowBackToTop(window.scrollY > BACK_TO_TOP_SCROLL_THRESHOLD_PX)
-    }
-
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-    }
-  }, [])
-
   function handleRetry() {
     setStatus(loading())
     setRetryCount((count) => count + 1)
-  }
-
-  function handleBackToTop() {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -153,7 +134,7 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
           <Button
             type="primary"
             className="product-details-page__back-to-top"
-            onClick={handleBackToTop}
+            onClick={scrollToTop}
           >
             Back to Top
           </Button>

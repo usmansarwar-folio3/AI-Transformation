@@ -52,7 +52,7 @@ Record library and technique choices here: what you used, what else you consider
 | --- | --- | --- | --- |
 | URL sync | React Router `useSearchParams` as source of truth (`search`, `category`, `sort`, `inStock`, `page`) | Local React state + optional sync | Refresh, copy-link, and Back/Forward restore the same view without a second store. |
 | In-stock filter | Extend `GET /api/products` with `inStock=true` in mock + client | Client-only filter of the current 20-item page | Keeps `total` honest across the full catalog; no new endpoint. |
-| Search commit | `Input.Search` writes the URL on Search/Enter (not every keystroke) | Debounced URL updates (later D2-5/D2-6) | Avoids flooding history while still making the committed query shareable. |
+| Search commit | Debounced draft → URL via `useDebouncedValue` (300ms); Enter/Search still commits immediately | URL update on every keystroke; Search-button only | Shareable URL while typing settles; Enter stays instant. Full latest-query race handling is D2-6. |
 
 ## D2-3 UI states
 
@@ -75,4 +75,12 @@ Record library and technique choices here: what you used, what else you consider
 | --- | --- | --- | --- |
 | Scroll target for Back to Top | `window` (`scroll` + `scrollTo`) | `app-layout__content` as a scroll container | Layout content is not an overflow scroller (`min-height: 100vh` on the page); the document/window scrolls. |
 | Stale product flash | Abort in-flight fetch + ignore aborted `then`/`catch` + `key={productId}` remount (fresh `loading()` state) | `setStatus(loading())` inside the fetch effect | Remount resets UI without `set-state-in-effect`; aborted paths never call `setState`. |
-| Back to Top control | Ant Design `Button` + window scroll listener cleaned up on unmount | `FloatButton.BackTop`, extracting a D2-5 hook now | Matches the task’s Button requirement; cleanup-first before reusable hooks. |
+| Back to Top control | Ant Design `Button` + window scroll listener cleaned up on unmount | `FloatButton.BackTop` | Matches the task’s Button requirement; listener later moved into `useBackToTop` (D2-5). |
+
+## D2-5 Custom hooks
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Debounce hook | Generic `useDebouncedValue<T>` in `src/hooks/` | `useDebouncedCallback` only; feature-named `useProductSearch` | Reusable for any value; browse search wires draft → debounced → URL commit. |
+| Scroll hook | `useBackToTop({ thresholdPx })` → `{ isVisible, scrollToTop }` | Leave listener in the page; bare `useWindowScrollThreshold` | Removes duplicated scroll/cleanup from details; still generic (no product id). |
+| HTTP in hooks | Keep `getProducts` / `getProduct` calls in page effects via `client.ts` | `useProduct` / `useProducts` API hooks | Hooks must not become a second HTTP stack; TanStack Query comes later. |

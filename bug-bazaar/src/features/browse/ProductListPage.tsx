@@ -5,7 +5,6 @@ import {
   ApiClientError,
   failure,
   getProducts,
-  isSuccess,
   loading,
   success,
   type ProductList,
@@ -29,6 +28,108 @@ const { Title, Paragraph, Text } = Typography
 
 function readForceError(params: URLSearchParams): 500 | undefined {
   return params.get('forceError') === '500' ? 500 : undefined
+}
+
+type ProductListResultsProps = {
+  filterKey: string
+  filters: ProductListFilters
+  forceError: 500 | undefined
+  onPageChange: (page: number) => void
+  onTotalChange: (total: number | null) => void
+}
+
+function ProductListResults({
+  filterKey,
+  filters,
+  forceError,
+  onPageChange,
+  onTotalChange,
+}: ProductListResultsProps) {
+  const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
+  const [retryCount, setRetryCount] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    void getProducts(
+      {
+        ...toProductQuery(filters),
+        ...(forceError ? { forceError } : {}),
+      },
+      controller.signal,
+    )
+      .then((result) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        setStatus(success(result))
+        onTotalChange(result.total)
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        if (error instanceof ApiClientError) {
+          setStatus(failure(error.toRequestError()))
+          return
+        }
+        setStatus(
+          failure({
+            httpStatus: 0,
+            code: 'UNKNOWN',
+            message: 'Could not load products.',
+          }),
+        )
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [filterKey, filters, forceError, retryCount, onTotalChange])
+
+  function handleRetry() {
+    setStatus(loading())
+    onTotalChange(null)
+    setRetryCount((count) => count + 1)
+  }
+
+  return (
+    <AsyncStatusView
+      status={status}
+      loadingDescription="Loading products"
+      emptyTitle="No products found"
+      emptyDescription="Try clearing filters or searching for something else."
+      isEmpty={(data) => data.items.length === 0}
+      onRetry={handleRetry}
+    >
+      {(data) => (
+        <>
+          {data.items.map((product) => (
+            <Col key={product.id} xs={24} sm={12} md={8} lg={6} xl={6} xxl={4}>
+              <ProductCard product={product} />
+            </Col>
+          ))}
+          {data.total > 0 ? (
+            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+              <Pagination
+                className="product-list-page__pagination"
+                current={filters.page}
+                pageSize={PRODUCTS_PAGE_SIZE}
+                total={data.total}
+                showSizeChanger={false}
+                hideOnSinglePage={false}
+                disabled={data.total === 0}
+                aria-label="Product list pages"
+                onChange={(page) => {
+                  onPageChange(page)
+                }}
+              />
+            </Col>
+          ) : null}
+        </>
+      )}
+    </AsyncStatusView>
+  )
 }
 
 type ProductListBodyProps = {
@@ -56,50 +157,14 @@ function ProductListBody({
   onPageChange,
   onClear,
 }: ProductListBodyProps) {
-  const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
-  const [retryCount, setRetryCount] = useState(0)
+  const [total, setTotal] = useState<number | null>(null)
+  const [totalForKey, setTotalForKey] = useState(filterKey)
 
-  useEffect(() => {
-    const controller = new AbortController()
-
-    void getProducts(
-      {
-        ...toProductQuery(filters),
-        ...(forceError ? { forceError } : {}),
-      },
-      controller.signal,
-    )
-      .then((result) => {
-        setStatus(success(result))
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        if (error instanceof ApiClientError) {
-          setStatus(failure(error.toRequestError()))
-          return
-        }
-        setStatus(
-          failure({
-            httpStatus: 0,
-            code: 'UNKNOWN',
-            message: 'Could not load products.',
-          }),
-        )
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [filterKey, filters, forceError, retryCount])
-
-  function handleRetry() {
-    setStatus(loading())
-    setRetryCount((count) => count + 1)
+  // Reset count when the keyed results remount for a new query (no effect setState).
+  if (filterKey !== totalForKey) {
+    setTotalForKey(filterKey)
+    setTotal(null)
   }
-
-  const total = isSuccess(status) ? status.data.total : null
 
   return (
     <>
@@ -116,41 +181,14 @@ function ProductListBody({
         />
       </Col>
 
-      <AsyncStatusView
-        status={status}
-        loadingDescription="Loading products"
-        emptyTitle="No products found"
-        emptyDescription="Try clearing filters or searching for something else."
-        isEmpty={(data) => data.items.length === 0}
-        onRetry={handleRetry}
-      >
-        {(data) => (
-          <>
-            {data.items.map((product) => (
-              <Col key={product.id} xs={24} sm={12} md={8} lg={6} xl={6} xxl={4}>
-                <ProductCard product={product} />
-              </Col>
-            ))}
-            {data.total > 0 ? (
-              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                <Pagination
-                  className="product-list-page__pagination"
-                  current={filters.page}
-                  pageSize={PRODUCTS_PAGE_SIZE}
-                  total={data.total}
-                  showSizeChanger={false}
-                  hideOnSinglePage={false}
-                  disabled={data.total === 0}
-                  aria-label="Product list pages"
-                  onChange={(page) => {
-                    onPageChange(page)
-                  }}
-                />
-              </Col>
-            ) : null}
-          </>
-        )}
-      </AsyncStatusView>
+      <ProductListResults
+        key={`${filterKey}::${forceError ?? ''}`}
+        filterKey={filterKey}
+        filters={filters}
+        forceError={forceError}
+        onPageChange={onPageChange}
+        onTotalChange={setTotal}
+      />
     </>
   )
 }
@@ -205,7 +243,6 @@ export function ProductListPage() {
       </Col>
 
       <ProductListBody
-        key={`${filterKey}::${forceError ?? ''}`}
         filterKey={filterKey}
         filters={filters}
         forceError={forceError}

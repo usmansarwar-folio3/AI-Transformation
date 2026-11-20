@@ -54,4 +54,17 @@ Use MSW; no real backend.
 
 **Changed and why:**
 - Relied on `key={productId}` for loading reset (lint forbids sync `setState` in the fetch effect) and added an aborted guard on `then` so a late success cannot paint the previous product
-- Added Ant Design “Back to Top” `Button` with window `scroll` listener removed in cleanup; no D2-5 hook extraction yet
+- Added Ant Design “Back to Top” `Button` with window `scroll` listener removed in cleanup; listener extracted to `useBackToTop` in D2-5
+
+## D2-5 — Custom hooks
+
+**Prompt:** Extract at least two typed reusable hooks (debounce + Back to Top); wire into browse; do not hide the HTTP client behind an API hook layer.
+
+**Kept:**
+- Typed client calls in page `useEffect`s
+- Existing filter URL helpers and AsyncStatusView
+
+**Changed and why:**
+- Added `useDebouncedValue` and `useBackToTop` under `src/hooks/` with unit tests
+- Search uses a controlled draft + 300ms debounce to commit URL (Enter/Search still immediate)
+- Kept `ProductFilters` mounted across keyed list remounts so typing is not wiped when results refetch

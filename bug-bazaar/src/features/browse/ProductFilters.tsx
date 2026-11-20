@@ -1,5 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Button, Col, Input, Row, Select, Space, Switch, Typography } from 'antd'
 import type { ProductCategory, ProductSort } from '../../api'
+import { useDebouncedValue } from '../../hooks'
 import {
   formatProductResultRange,
   PRODUCT_CATEGORY_OPTIONS,
@@ -10,6 +12,9 @@ import {
 import './product-filters.scss'
 
 const { Text } = Typography
+
+/** Delay before typing commits search to the URL (D2-5). Enter/Search still commits immediately. */
+const SEARCH_DEBOUNCE_MS = 300
 
 type ProductFiltersProps = {
   filters: ProductListFilters
@@ -32,19 +37,42 @@ export function ProductFilters({
   onClear,
   canClear,
 }: ProductFiltersProps) {
+  const [searchDraft, setSearchDraft] = useState(filters.search)
+  const [syncedSearch, setSyncedSearch] = useState(filters.search)
+
+  // Keep the draft aligned when the URL search changes externally (clear, Back/Forward).
+  if (filters.search !== syncedSearch) {
+    setSyncedSearch(filters.search)
+    setSearchDraft(filters.search)
+  }
+
+  const debouncedSearch = useDebouncedValue(searchDraft, SEARCH_DEBOUNCE_MS)
+
+  useEffect(() => {
+    const next = debouncedSearch.trim()
+    if (next === filters.search) {
+      return
+    }
+    onSearchCommit(next)
+  }, [debouncedSearch, filters.search, onSearchCommit])
+
   return (
     <Row className="product-filters" gutter={[16, 16]}>
       <Col xs={24} sm={24} md={12} lg={8} xl={8} xxl={6}>
         <Input.Search
-          key={filters.search}
           className="product-filters__search"
           placeholder="Search products"
           allowClear
           enterButton="Search"
-          defaultValue={filters.search}
+          value={searchDraft}
           aria-label="Search products"
+          onChange={(event) => {
+            setSearchDraft(event.target.value)
+          }}
           onSearch={(value) => {
-            onSearchCommit(value.trim())
+            const next = value.trim()
+            setSearchDraft(next)
+            onSearchCommit(next)
           }}
         />
       </Col>
