@@ -16,6 +16,9 @@ import './product-details-page.scss'
 
 const { Title, Text } = Typography
 
+/** Show Back to Top after the window scrolls past this many pixels. */
+const BACK_TO_TOP_SCROLL_THRESHOLD_PX = 240
+
 type ProductDetailsContentProps = {
   productId: string
 }
@@ -24,12 +27,18 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
   const navigate = useNavigate()
   const [status, setStatus] = useState<RequestStatus<Product>>(loading())
   const [retryCount, setRetryCount] = useState(0)
+  const [showBackToTop, setShowBackToTop] = useState(false)
 
   useEffect(() => {
     const controller = new AbortController()
 
+    // Loading reset on productId change comes from `key={productId}` remount
+    // (avoids setState-in-effect). Abort + guards below stop late responses.
     void getProduct(productId, controller.signal)
       .then((result) => {
+        if (controller.signal.aborted) {
+          return
+        }
         setStatus(success(result))
       })
       .catch((error: unknown) => {
@@ -54,9 +63,26 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
     }
   }, [productId, retryCount])
 
+  useEffect(() => {
+    function handleScroll() {
+      setShowBackToTop(window.scrollY > BACK_TO_TOP_SCROLL_THRESHOLD_PX)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [])
+
   function handleRetry() {
     setStatus(loading())
     setRetryCount((count) => count + 1)
+  }
+
+  function handleBackToTop() {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   return (
@@ -113,6 +139,26 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
           </>
         )}
       </AsyncStatusView>
+
+      {showBackToTop ? (
+        <Col
+          xs={24}
+          sm={24}
+          md={24}
+          lg={24}
+          xl={24}
+          xxl={24}
+          className="product-details-page__back-to-top-slot"
+        >
+          <Button
+            type="primary"
+            className="product-details-page__back-to-top"
+            onClick={handleBackToTop}
+          >
+            Back to Top
+          </Button>
+        </Col>
+      ) : null}
     </Row>
   )
 }

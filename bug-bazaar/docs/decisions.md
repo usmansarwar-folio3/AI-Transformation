@@ -68,3 +68,11 @@ Record library and technique choices here: what you used, what else you consider
 | --- | --- | --- | --- |
 | Pagination UI | Ant Design numbered `Pagination` (page size fixed at 20) | Infinite scroll / “Load more” | Matches the API’s `page` + `total`; keeps URL shareable; no Intersection Observer. |
 | Page size constant | `PRODUCTS_PAGE_SIZE` in `src/api/pagination.ts` | Hard-coding `20` in the UI only | Same value for mock, client queries, and range copy; changing it still requires api-contract + decisions. |
+
+## D2-4 useEffect and cleanup
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Scroll target for Back to Top | `window` (`scroll` + `scrollTo`) | `app-layout__content` as a scroll container | Layout content is not an overflow scroller (`min-height: 100vh` on the page); the document/window scrolls. |
+| Stale product flash | Abort in-flight fetch + ignore aborted `then`/`catch` + `key={productId}` remount (fresh `loading()` state) | `setStatus(loading())` inside the fetch effect | Remount resets UI without `set-state-in-effect`; aborted paths never call `setState`. |
+| Back to Top control | Ant Design `Button` + window scroll listener cleaned up on unmount | `FloatButton.BackTop`, extracting a D2-5 hook now | Matches the task’s Button requirement; cleanup-first before reusable hooks. |

@@ -42,3 +42,16 @@ Use MSW; no real backend.
 **Changed and why:**
 - Shared page-size constant so mock, query, and range string stay aligned without inventing a new size
 - Range helper returns “Showing 0 results” when `total` is 0 so the filters bar never implies 5000 cards on screen
+
+## D2-4 — useEffect and cleanup
+
+**Prompt:** Implement D2-4 from docs/ai/browse.md: abort on product switch/unmount, Back to Top with scroll listener cleanup, reset loading so stale then() cannot flash wrong product.
+
+**Kept:**
+- `AbortController` cleanup on `productId` change / unmount; aborted catch already skipped `setState`
+- `key={productId}` remount on the details body
+- Window as scroll target (layout content is not a scroller)
+
+**Changed and why:**
+- Relied on `key={productId}` for loading reset (lint forbids sync `setState` in the fetch effect) and added an aborted guard on `then` so a late success cannot paint the previous product
+- Added Ant Design “Back to Top” `Button` with window `scroll` listener removed in cleanup; no D2-5 hook extraction yet

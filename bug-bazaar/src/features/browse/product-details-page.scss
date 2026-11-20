@@ -29,3 +29,19 @@
 .product-details-page__category {
   color: $color-text-secondary;
 }
+
+.product-details-page__back-to-top-slot {
+  height: 0;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.product-details-page__back-to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 10;
+  pointer-events: auto;
+}
