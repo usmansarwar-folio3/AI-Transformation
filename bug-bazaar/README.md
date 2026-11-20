@@ -46,6 +46,8 @@ Demo login: any email, password `password`.
 
 List filters use URL params: `search`, `category`, `sort`, `inStock=true`, `page`.
 
+UI state triggers (D2-3): `?search=__none__` (empty), `?forceError=500` (list error), `/products/missing` (details 404).
+
 ## Project layout
 
 - `src/api/` — typed HTTP client (`client.ts` is the only `fetch` call site), Zod schemas, `RequestStatus`

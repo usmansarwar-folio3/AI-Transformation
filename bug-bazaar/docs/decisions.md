@@ -53,3 +53,11 @@ Record library and technique choices here: what you used, what else you consider
 | URL sync | React Router `useSearchParams` as source of truth (`search`, `category`, `sort`, `inStock`, `page`) | Local React state + optional sync | Refresh, copy-link, and Back/Forward restore the same view without a second store. |
 | In-stock filter | Extend `GET /api/products` with `inStock=true` in mock + client | Client-only filter of the current 20-item page | Keeps `total` honest across the full catalog; no new endpoint. |
 | Search commit | `Input.Search` writes the URL on Search/Enter (not every keystroke) | Debounced URL updates (later D2-5/D2-6) | Avoids flooding history while still making the committed query shareable. |
+
+## D2-3 UI states
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Shared chrome | `AsyncStatusView` + `RequestStatus<T>` for list and details | Parallel `isLoading` / `errorMessage` booleans per page | One Spin / Empty / Alert+Retry look; impossible loading+error combos stay unrepresentable. |
+| Empty vs error | Empty only after `success` with no items; errors use `failure(...)` | Treating 404/empty as the same screen | Matches “no results” vs “failed request”; Retry re-fetches. |
+| Intentional triggers | URL `forceError=500` (list), `search=__none__` (empty), `/products/missing` (details 404) | Hidden debug menu | Evaluators can hit each state on purpose without extra UI. |

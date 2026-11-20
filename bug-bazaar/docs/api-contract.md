@@ -66,7 +66,7 @@ These controls are for the MSW mock only. They are not part of a real backend.
 
 | Status | Endpoint | How to trigger |
 | --- | --- | --- |
-| 500 | `GET /api/products` | Query `forceError=500` (client: `getProducts({ forceError: 500 })`) |
+| 500 | `GET /api/products` | Query `forceError=500` (URL or `getProducts({ forceError: 500 })`) |
 | 404 | `GET /api/products/:id` | Use an unknown id, e.g. `missing` |
 | 400 | `POST /api/login` | Omit `email` and/or `password` |
 | 401 | `POST /api/login` | Wrong password (anything other than `password`) |

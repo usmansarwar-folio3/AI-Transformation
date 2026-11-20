@@ -1,7 +1,17 @@
 import { useEffect, useState } from 'react'
-import { Col, Row, Spin, Typography } from 'antd'
+import { Col, Row, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
-import { getProducts, type Product } from '../../api'
+import {
+  ApiClientError,
+  failure,
+  getProducts,
+  isSuccess,
+  loading,
+  success,
+  type ProductList,
+  type RequestStatus,
+} from '../../api'
+import { AsyncStatusView } from '../../components/AsyncStatusView'
 import { ProductCard } from './ProductCard'
 import { ProductFilters } from './ProductFilters'
 import {
@@ -14,55 +24,129 @@ import {
 } from './productFilters'
 import './product-list-page.scss'
 
-const { Title, Paragraph } = Typography
+const { Title, Paragraph, Text } = Typography
 
-type ListSnapshot = {
-  key: string
-  items: Product[]
-  total: number
+function readForceError(params: URLSearchParams): 500 | undefined {
+  return params.get('forceError') === '500' ? 500 : undefined
+}
+
+type ProductListBodyProps = {
+  filterKey: string
+  filters: ProductListFilters
+  forceError: 500 | undefined
+  canClear: boolean
+  onSearchCommit: (search: string) => void
+  onCategoryChange: (category: ProductListFilters['category']) => void
+  onSortChange: (sort: ProductListFilters['sort']) => void
+  onInStockChange: (inStock: boolean) => void
+  onClear: () => void
+}
+
+function ProductListBody({
+  filterKey,
+  filters,
+  forceError,
+  canClear,
+  onSearchCommit,
+  onCategoryChange,
+  onSortChange,
+  onInStockChange,
+  onClear,
+}: ProductListBodyProps) {
+  const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
+  const [retryCount, setRetryCount] = useState(0)
+
+  useEffect(() => {
+    const controller = new AbortController()
+
+    void getProducts(
+      {
+        ...toProductQuery(filters),
+        ...(forceError ? { forceError } : {}),
+      },
+      controller.signal,
+    )
+      .then((result) => {
+        setStatus(success(result))
+      })
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) {
+          return
+        }
+        if (error instanceof ApiClientError) {
+          setStatus(failure(error.toRequestError()))
+          return
+        }
+        setStatus(
+          failure({
+            httpStatus: 0,
+            code: 'UNKNOWN',
+            message: 'Could not load products.',
+          }),
+        )
+      })
+
+    return () => {
+      controller.abort()
+    }
+  }, [filterKey, filters, forceError, retryCount])
+
+  function handleRetry() {
+    setStatus(loading())
+    setRetryCount((count) => count + 1)
+  }
+
+  const total = isSuccess(status) ? status.data.total : null
+
+  return (
+    <>
+      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+        <ProductFilters
+          filters={filters}
+          total={total}
+          canClear={canClear}
+          onSearchCommit={onSearchCommit}
+          onCategoryChange={onCategoryChange}
+          onSortChange={onSortChange}
+          onInStockChange={onInStockChange}
+          onClear={onClear}
+        />
+      </Col>
+
+      <AsyncStatusView
+        status={status}
+        loadingDescription="Loading products"
+        emptyTitle="No products found"
+        emptyDescription="Try clearing filters or searching for something else."
+        isEmpty={(data) => data.items.length === 0}
+        onRetry={handleRetry}
+      >
+        {(data) => (
+          <>
+            {data.items.map((product) => (
+              <Col key={product.id} xs={24} sm={12} md={8} lg={6} xl={6} xxl={4}>
+                <ProductCard product={product} />
+              </Col>
+            ))}
+          </>
+        )}
+      </AsyncStatusView>
+    </>
+  )
 }
 
 export function ProductListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const filterKey = searchParams.toString()
   const filters = parseProductFilters(searchParams)
-
-  const [snapshot, setSnapshot] = useState<ListSnapshot | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const requestKey = filterKey
-    const query = toProductQuery(parseProductFilters(new URLSearchParams(requestKey)))
-
-    void getProducts(query, controller.signal)
-      .then((result) => {
-        setSnapshot({
-          key: requestKey,
-          items: result.items,
-          total: result.total,
-        })
-        setErrorMessage(null)
-      })
-      .catch(() => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setSnapshot({ key: requestKey, items: [], total: 0 })
-        setErrorMessage('Could not load products.')
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [filterKey])
-
-  const isLoading = snapshot === null || snapshot.key !== filterKey
-  const products = snapshot !== null && snapshot.key === filterKey ? snapshot.items : null
-  const total = snapshot !== null && snapshot.key === filterKey ? snapshot.total : null
+  const forceError = readForceError(searchParams)
 
   function replaceFilters(next: ProductListFilters) {
-    setSearchParams(productFiltersToSearchParams(next), { replace: false })
+    const params = productFiltersToSearchParams(next)
+    if (forceError) {
+      params.set('forceError', String(forceError))
+    }
+    setSearchParams(params, { replace: false })
   }
 
   function patchFilters(patch: Partial<ProductListFilters>) {
@@ -86,54 +170,33 @@ export function ProductListPage() {
         <Paragraph className="product-list-page__hint">
           Browse developer gear. Filters sync to the URL so refresh, copy-link, and Back work.
         </Paragraph>
+        <Paragraph className="product-list-page__hint">
+          Trigger states: <Text code>search=__none__</Text> (empty),{' '}
+          <Text code>forceError=500</Text> (list error), <Text code>/products/missing</Text>{' '}
+          (details error).
+        </Paragraph>
       </Col>
 
-      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-        <ProductFilters
-          filters={filters}
-          total={total}
-          canClear={hasActiveProductFilters(filters)}
-          onSearchCommit={(search) => {
-            patchFilters({ search })
-          }}
-          onCategoryChange={(category) => {
-            patchFilters({ category })
-          }}
-          onSortChange={(sort) => {
-            patchFilters({ sort })
-          }}
-          onInStockChange={(inStock) => {
-            patchFilters({ inStock })
-          }}
-          onClear={handleClear}
-        />
-      </Col>
-
-      {isLoading ? (
-        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-          <Spin className="product-list-page__spin" description="Loading products" size="large" />
-        </Col>
-      ) : null}
-
-      {errorMessage ? (
-        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-          <Paragraph type="danger">{errorMessage}</Paragraph>
-        </Col>
-      ) : null}
-
-      {!isLoading && products && products.length === 0 && !errorMessage ? (
-        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-          <Paragraph className="product-list-page__empty">No products match these filters.</Paragraph>
-        </Col>
-      ) : null}
-
-      {!isLoading && products
-        ? products.map((product) => (
-            <Col key={product.id} xs={24} sm={12} md={8} lg={6} xl={6} xxl={4}>
-              <ProductCard product={product} />
-            </Col>
-          ))
-        : null}
+      <ProductListBody
+        key={`${filterKey}::${forceError ?? ''}`}
+        filterKey={filterKey}
+        filters={filters}
+        forceError={forceError}
+        canClear={hasActiveProductFilters(filters)}
+        onSearchCommit={(search) => {
+          patchFilters({ search })
+        }}
+        onCategoryChange={(category) => {
+          patchFilters({ category })
+        }}
+        onSortChange={(sort) => {
+          patchFilters({ sort })
+        }}
+        onInStockChange={(inStock) => {
+          patchFilters({ inStock })
+        }}
+        onClear={handleClear}
+      />
     </Row>
   )
 }

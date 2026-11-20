@@ -1,0 +1,29 @@
+@use '../styles/variables' as *;
+
+.async-status-view__spin {
+  display: block;
+  padding: 48px 0;
+  text-align: center;
+}
+
+.async-status-view__error {
+  background: $color-bg-container;
+}
+
+.async-status-view__empty {
+  padding: 32px 0;
+  background: $color-bg-container;
+  border-radius: $border-radius;
+}
+
+.async-status-view__empty-copy {
+  width: 100%;
+}
+
+.async-status-view__empty-title {
+  color: $color-text;
+}
+
+.async-status-view__empty-description {
+  color: $color-text-secondary;
+}
