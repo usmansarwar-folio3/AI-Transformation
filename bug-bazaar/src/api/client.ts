@@ -80,6 +80,11 @@ export type ProductQuery = {
   inStock?: boolean
   /** Mock-only control documented in docs/api-contract.md. Not part of the real API. */
   forceError?: 500
+  /**
+   * Mock-only: variable list delay so shorter searches finish later than longer ones.
+   * Used to demo D2-6 out-of-order responses. Not part of the real API.
+   */
+  slow?: boolean
 }
 
 export type LoginInput = {
@@ -147,6 +152,7 @@ export function getProducts(
   if (query.page !== undefined) params.set('page', String(query.page))
   if (query.inStock) params.set('inStock', 'true')
   if (query.forceError !== undefined) params.set('forceError', String(query.forceError))
+  if (query.slow) params.set('slow', '1')
   const qs = params.toString()
   return request(`/products${qs ? `?${qs}` : ''}`, productListSchema, { signal })
 }

@@ -49,12 +49,17 @@ export function ProductFilters({
   const debouncedSearch = useDebouncedValue(searchDraft, SEARCH_DEBOUNCE_MS)
 
   useEffect(() => {
+    // Only commit after the draft has settled. Otherwise a stale debounced value
+    // (e.g. "") can overwrite a newer URL search from Back/Forward or a fast commit.
+    if (debouncedSearch !== searchDraft) {
+      return
+    }
     const next = debouncedSearch.trim()
     if (next === filters.search) {
       return
     }
     onSearchCommit(next)
-  }, [debouncedSearch, filters.search, onSearchCommit])
+  }, [debouncedSearch, searchDraft, filters.search, onSearchCommit])
 
   return (
     <Row className="product-filters" gutter={[16, 16]}>

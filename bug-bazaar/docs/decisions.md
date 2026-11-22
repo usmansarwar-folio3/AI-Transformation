@@ -84,3 +84,12 @@ Record library and technique choices here: what you used, what else you consider
 | Debounce hook | Generic `useDebouncedValue<T>` in `src/hooks/` | `useDebouncedCallback` only; feature-named `useProductSearch` | Reusable for any value; browse search wires draft → debounced → URL commit. |
 | Scroll hook | `useBackToTop({ thresholdPx })` → `{ isVisible, scrollToTop }` | Leave listener in the page; bare `useWindowScrollThreshold` | Removes duplicated scroll/cleanup from details; still generic (no product id). |
 | HTTP in hooks | Keep `getProducts` / `getProduct` calls in page effects via `client.ts` | `useProduct` / `useProducts` API hooks | Hooks must not become a second HTTP stack; TanStack Query comes later. |
+
+## D2-6 Race conditions
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Latest-query-wins | **Both** abort in-flight `getProducts` on filter change **and** ignore stale `then`/`catch` via a monotonic request id | Abort only; ignore-stale only | Abort stops work early; the id guard still drops a late settle if abort loses a race. |
+| Overlapping requests | Keep one `ProductListResults` instance (no remount key) so debounce/URL updates re-run the effect | Remount-per-`filterKey` | Remount already aborted, but same-instance races better match live typing. |
+| Slowness simulation | MSW mock query `slow=1`: delay ≈ `max(50, 350 - search.length * 40)` | Fixed client `setTimeout`; always-on MSW delay | Opt-in so normal tests stay fast; shorter searches finish later → out-of-order without a custom backend. |
+| Debounce vs URL | Commit debounced search only when `debounced === draft` | Always commit debounced value | Prevents a lagging debounced `""` from clearing a newer URL search (Back/Forward or fast commits). |

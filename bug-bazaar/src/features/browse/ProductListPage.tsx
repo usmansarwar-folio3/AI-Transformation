@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Col, Pagination, Row, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 import {
@@ -30,10 +30,15 @@ function readForceError(params: URLSearchParams): 500 | undefined {
   return params.get('forceError') === '500' ? 500 : undefined
 }
 
+function readSlow(params: URLSearchParams): boolean {
+  return params.get('slow') === '1'
+}
+
 type ProductListResultsProps = {
   filterKey: string
   filters: ProductListFilters
   forceError: 500 | undefined
+  slow: boolean
   onPageChange: (page: number) => void
   onTotalChange: (total: number | null) => void
 }
@@ -42,31 +47,43 @@ function ProductListResults({
   filterKey,
   filters,
   forceError,
+  slow,
   onPageChange,
   onTotalChange,
 }: ProductListResultsProps) {
   const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
   const [retryCount, setRetryCount] = useState(0)
+  const [statusKey, setStatusKey] = useState(filterKey)
+  const requestIdRef = useRef(0)
+
+  // Fresh loading UI when filters change without remounting (keeps one effect instance for races).
+  if (filterKey !== statusKey) {
+    setStatusKey(filterKey)
+    setStatus(loading())
+  }
 
   useEffect(() => {
     const controller = new AbortController()
+    const requestId = ++requestIdRef.current
 
     void getProducts(
       {
         ...toProductQuery(filters),
         ...(forceError ? { forceError } : {}),
+        ...(slow ? { slow: true } : {}),
       },
       controller.signal,
     )
       .then((result) => {
-        if (controller.signal.aborted) {
+        // Latest-query-wins: abort cleanup + ignore stale completions.
+        if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return
         }
         setStatus(success(result))
         onTotalChange(result.total)
       })
       .catch((error: unknown) => {
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return
         }
         if (error instanceof ApiClientError) {
@@ -85,7 +102,7 @@ function ProductListResults({
     return () => {
       controller.abort()
     }
-  }, [filterKey, filters, forceError, retryCount, onTotalChange])
+  }, [filterKey, filters, forceError, slow, retryCount, onTotalChange])
 
   function handleRetry() {
     setStatus(loading())
@@ -136,6 +153,7 @@ type ProductListBodyProps = {
   filterKey: string
   filters: ProductListFilters
   forceError: 500 | undefined
+  slow: boolean
   canClear: boolean
   onSearchCommit: (search: string) => void
   onCategoryChange: (category: ProductListFilters['category']) => void
@@ -149,6 +167,7 @@ function ProductListBody({
   filterKey,
   filters,
   forceError,
+  slow,
   canClear,
   onSearchCommit,
   onCategoryChange,
@@ -160,7 +179,6 @@ function ProductListBody({
   const [total, setTotal] = useState<number | null>(null)
   const [totalForKey, setTotalForKey] = useState(filterKey)
 
-  // Reset count when the keyed results remount for a new query (no effect setState).
   if (filterKey !== totalForKey) {
     setTotalForKey(filterKey)
     setTotal(null)
@@ -182,10 +200,10 @@ function ProductListBody({
       </Col>
 
       <ProductListResults
-        key={`${filterKey}::${forceError ?? ''}`}
         filterKey={filterKey}
         filters={filters}
         forceError={forceError}
+        slow={slow}
         onPageChange={onPageChange}
         onTotalChange={setTotal}
       />
@@ -198,11 +216,15 @@ export function ProductListPage() {
   const filterKey = searchParams.toString()
   const filters = parseProductFilters(searchParams)
   const forceError = readForceError(searchParams)
+  const slow = readSlow(searchParams)
 
   function replaceFilters(next: ProductListFilters) {
     const params = productFiltersToSearchParams(next)
     if (forceError) {
       params.set('forceError', String(forceError))
+    }
+    if (slow) {
+      params.set('slow', '1')
     }
     setSearchParams(params, { replace: false })
   }
@@ -223,7 +245,11 @@ export function ProductListPage() {
   }
 
   function handleClear() {
-    setSearchParams(productFiltersToSearchParams(clearProductFilters()), { replace: false })
+    const params = productFiltersToSearchParams(clearProductFilters())
+    if (slow) {
+      params.set('slow', '1')
+    }
+    setSearchParams(params, { replace: false })
   }
 
   return (
@@ -237,8 +263,8 @@ export function ProductListPage() {
         </Paragraph>
         <Paragraph className="product-list-page__hint">
           Trigger states: <Text code>search=__none__</Text> (empty),{' '}
-          <Text code>forceError=500</Text> (list error), <Text code>/products/missing</Text>{' '}
-          (details error).
+          <Text code>forceError=500</Text> (list error), <Text code>slow=1</Text> (out-of-order
+          list), <Text code>/products/missing</Text> (details error).
         </Paragraph>
       </Col>
 
@@ -246,6 +272,7 @@ export function ProductListPage() {
         filterKey={filterKey}
         filters={filters}
         forceError={forceError}
+        slow={slow}
         canClear={hasActiveProductFilters(filters)}
         onSearchCommit={(search) => {
           patchFilters({ search })

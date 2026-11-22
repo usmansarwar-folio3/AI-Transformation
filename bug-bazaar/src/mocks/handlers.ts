@@ -1,4 +1,4 @@
-import { http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse } from 'msw'
 import type { Product } from '../api/schemas'
 import { PRODUCT_COUNT, PRODUCTS_PAGE_SIZE, productCatalog } from './seed'
 
@@ -92,10 +92,18 @@ function filterProducts(url: URL): { items: Product[]; total: number } {
 }
 
 export const handlers = [
-  http.get('/api/products', ({ request }) => {
+  http.get('/api/products', async ({ request }) => {
     const url = new URL(request.url)
     if (url.searchParams.get('forceError') === '500') {
       return apiError(500, 'INTERNAL', 'Forced product list failure')
+    }
+
+    // Mock-only race demo (`slow=1`): shorter searches wait longer so an older
+    // request can finish after a newer one if the client does not cancel/ignore it.
+    if (url.searchParams.get('slow') === '1') {
+      const search = url.searchParams.get('search') ?? ''
+      const ms = Math.max(50, 350 - search.length * 40)
+      await delay(ms)
     }
 
     const result = filterProducts(url)

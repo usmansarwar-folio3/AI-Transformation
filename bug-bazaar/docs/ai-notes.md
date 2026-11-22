@@ -68,3 +68,17 @@ Use MSW; no real backend.
 - Added `useDebouncedValue` and `useBackToTop` under `src/hooks/` with unit tests
 - Search uses a controlled draft + 300ms debounce to commit URL (Enter/Search still immediate)
 - Kept `ProductFilters` mounted across keyed list remounts so typing is not wiped when results refetch
+
+## D2-6 — Race conditions
+
+**Prompt:** Latest search always wins; simulate slow/out-of-order list responses; abort and/or ignore stale; keep URL sync; prove with debounce/live search.
+
+**Kept:**
+- Debounced URL search commits from D2-5
+- Typed `getProducts` via `client.ts` only
+
+**Changed and why:**
+- List fetch uses abort cleanup **plus** a request-id guard so aborted/stale responses never `setState`
+- Removed results remount-per-query so overlapping in-flight requests are real
+- MSW `slow=1` variable delay (documented mock control) for manual out-of-order demos; Vitest race test settles older promises after newer ones
+- Debounced search commits only when `debounced === draft`, so a stale `""` cannot wipe a newer URL search
