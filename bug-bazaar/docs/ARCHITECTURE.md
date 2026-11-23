@@ -65,3 +65,21 @@ Browse reads filters from the URL, loads products through Query → client → M
 ## Choice to defend
 
 **Native `fetch` wrapper instead of Axios.** Six contract endpoints; the week scores status codes, abort, and error mapping. A short client teaches that. MSW mocks `fetch` directly. TanStack Query is the cache, not the HTTP stack.
+
+## Design patterns
+
+### 1. Adapter — typed API client
+
+`src/api/client.ts` is the only module that calls `fetch`. Zod schemas validate success and error payloads. Features import `getProducts`, `login`, `createOrder`, and never invent endpoints. This adapts the HTTP contract into typed functions the UI can call.
+
+### 2. Container / presentational
+
+`ProductListPage` owns Query status, pagination, and live-stock wiring. `ProductCard` is a memoized presentational card: product props in, keyboard-friendly Ant Design `Card` out. Keeping the card dumb makes list re-renders cheaper when the cart badge updates.
+
+### 3. Custom hooks
+
+- `useDebouncedValue` — search draft → URL without network code.
+- `useBackToTop` — scroll listener + cleanup on the details page.
+- `useLiveStock` — WebSocket subscribe, reconnect, cache patch, unmount close.
+
+Hooks sit **above** the typed client. They are not a second HTTP layer.
