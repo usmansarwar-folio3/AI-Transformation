@@ -1,0 +1,31 @@
+@use '../../styles/variables' as *;
+
+.mock-api-page__title {
+  margin-block-end: 0;
+  color: $color-text;
+}
+
+.mock-api-page__alert {
+  margin-block: 12px 8px;
+}
+
+.mock-api-page__hint {
+  color: $color-text-secondary;
+}
+
+.mock-api-page__path {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.mock-api-page__table {
+  background: $color-bg-container;
+  border-radius: $border-radius;
+}
+
+.mock-api-page__details {
+  width: 100%;
+}
+
+.mock-api-page__try {
+  padding-inline: 0;
+}

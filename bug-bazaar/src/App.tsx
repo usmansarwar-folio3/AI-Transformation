@@ -7,6 +7,7 @@ import { ProductDetailsPage } from './features/browse/ProductDetailsPage'
 import { ProductListPage } from './features/browse/ProductListPage'
 import { CartPage } from './features/cart/CartPage'
 import { OrderConfirmationPage } from './features/cart/OrderConfirmationPage'
+import { MockApiPage } from './features/dev/MockApiPage'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route index element={<ProductListPage />} />
         <Route path="products/:productId" element={<ProductDetailsPage />} />
         <Route path="cart" element={<CartPage />} />
+        <Route path="dev/api" element={<MockApiPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route
           path="account"
