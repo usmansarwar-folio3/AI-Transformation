@@ -1,0 +1,23 @@
+@use '../../styles/variables' as *;
+
+.product-filters {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+.product-filters__search,
+.product-filters__select {
+  width: 100%;
+}
+
+.product-filters__stock-label {
+  color: $color-text;
+}
+
+.product-filters__clear {
+  width: 100%;
+}
+
+.product-filters__count {
+  color: $color-text-secondary;
+}

@@ -1,0 +1,46 @@
+@use '../../styles/variables' as *;
+
+.mini-cart {
+  width: 100%;
+}
+
+.mini-cart__title {
+  margin-block: 0 8px;
+  color: $color-text;
+}
+
+.mini-cart__empty {
+  margin-block: 24px;
+}
+
+.mini-cart__line {
+  width: 100%;
+  padding-block-end: 8px;
+  border-block-end: 1px solid $color-border;
+}
+
+.mini-cart__name {
+  color: $color-text;
+}
+
+.mini-cart__meta,
+.mini-cart__line-total {
+  color: $color-text-secondary;
+}
+
+.mini-cart__qty {
+  width: 100%;
+}
+
+.mini-cart__remove {
+  padding-inline: 0;
+}
+
+.mini-cart__total {
+  display: block;
+  color: $color-text;
+}
+
+.mini-cart__checkout {
+  margin-block-start: 4px;
+}

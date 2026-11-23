@@ -1,0 +1,27 @@
+@use '../../styles/variables' as *;
+
+.product-list-page__title {
+  margin-bottom: 0;
+  color: $color-text;
+}
+
+.product-list-page__hint {
+  color: $color-text-secondary;
+}
+
+.product-list-page__count {
+  margin-inline-end: 12px;
+  color: $color-text-secondary;
+}
+
+.product-list-page__live {
+  vertical-align: middle;
+}
+
+.product-list-page__pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 16px 0;
+}
+

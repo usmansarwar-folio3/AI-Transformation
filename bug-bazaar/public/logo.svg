@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Bug Bazaar">
+  <rect width="64" height="64" rx="14" fill="#c45c26"/>
+  <ellipse cx="32" cy="34" rx="16" ry="14" fill="#f6f1ea"/>
+  <circle cx="26" cy="32" r="3" fill="#1c1917"/>
+  <circle cx="38" cy="32" r="3" fill="#1c1917"/>
+  <path d="M22 40 Q32 46 42 40" fill="none" stroke="#1c1917" stroke-width="2" stroke-linecap="round"/>
+  <line x1="16" y1="22" x2="10" y2="12" stroke="#f6f1ea" stroke-width="3" stroke-linecap="round"/>
+  <line x1="48" y1="22" x2="54" y2="12" stroke="#f6f1ea" stroke-width="3" stroke-linecap="round"/>
+  <line x1="14" y1="36" x2="6" y2="36" stroke="#f6f1ea" stroke-width="3" stroke-linecap="round"/>
+  <line x1="50" y1="36" x2="58" y2="36" stroke="#f6f1ea" stroke-width="3" stroke-linecap="round"/>
+</svg>

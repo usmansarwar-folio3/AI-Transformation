@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Sticker pack">
+  <rect width="400" height="300" fill="#efe6d9"/>
+  <rect x="100" y="70" width="200" height="160" rx="12" fill="#ffffff" stroke="#c45c26" stroke-width="4"/>
+  <text x="200" y="145" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="700" fill="#1c1917">;</text>
+  <text x="200" y="195" text-anchor="middle" font-family="Arial, sans-serif" font-size="18" fill="#c45c26">ship it</text>
+</svg>

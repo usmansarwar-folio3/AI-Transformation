@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Laptop sticker">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <ellipse cx="200" cy="150" rx="90" ry="70" fill="#1f6f8b"/>
+  <text x="200" y="160" text-anchor="middle" font-family="Arial, sans-serif" font-size="36" font-weight="700" fill="#f6f1ea">{{}</text>
+</svg>

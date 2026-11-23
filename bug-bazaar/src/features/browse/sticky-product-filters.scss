@@ -1,0 +1,11 @@
+@use '../../styles/variables' as *;
+
+.sticky-product-filters {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 20;
+  width: 100%;
+  padding: 12px 0;
+  background: $color-bg-layout;
+  border-block-end: 1px solid $color-border;
+}

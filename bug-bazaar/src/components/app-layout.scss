@@ -1,0 +1,142 @@
+@use '../styles/variables' as *;
+
+.app-layout {
+  min-height: 100vh;
+  background: $color-bg-layout;
+}
+
+.app-layout__skip-link {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  z-index: 1000;
+  transform: translateY(-120%);
+  padding: 8px 16px;
+  background: $color-bg-container;
+  color: $color-primary;
+}
+
+.app-layout__skip-link:focus {
+  transform: translateY(0);
+}
+
+.app-layout__sider--left {
+  overflow: auto;
+  padding: 16px;
+  background: $color-sider;
+  border-inline-end: 1px solid $color-sider-divider;
+}
+
+.app-layout__nav-drawer .ant-drawer-body {
+  padding: 16px;
+  background: $color-sider;
+}
+
+.app-layout__nav-drawer .ant-drawer-header {
+  background: $color-sider;
+  border-block-end: 1px solid $color-sider-divider;
+}
+
+.app-layout__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: auto;
+  margin-block-end: 20px;
+  padding-inline: 0;
+  color: $color-on-sider;
+}
+
+.app-layout__logo {
+  flex-shrink: 0;
+}
+
+.app-layout__brand-text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: $color-on-sider;
+}
+
+.app-layout__nav {
+  width: 100%;
+}
+
+.app-layout__nav-button {
+  text-align: start;
+}
+
+.app-layout__demo-dropdown {
+  width: 100%;
+}
+
+.app-layout__cart-badge {
+  display: inline-flex;
+}
+
+.app-layout__main {
+  min-width: 0;
+  background: $color-bg-layout;
+}
+
+.app-layout__toolbar {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 30;
+  width: 100%;
+  padding: 12px 24px;
+  background: $color-bg-container;
+  border-block-end: 1px solid $color-border;
+}
+
+.app-layout__toolbar-start {
+  flex-wrap: nowrap;
+}
+
+.app-layout__toolbar-end {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.app-layout__toolbar-label {
+  color: $color-text-secondary;
+}
+
+.app-layout__header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  padding-inline: 0;
+  color: $color-text;
+}
+
+.app-layout__header-logo {
+  flex-shrink: 0;
+}
+
+.app-layout__header-brand-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-text;
+}
+
+.app-layout__content {
+  padding: 24px;
+  min-height: 280px;
+
+  @media (max-width: 991px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 575px) {
+    padding: 12px;
+  }
+}
+
+.app-layout__footer {
+  text-align: center;
+  color: $color-text-secondary;
+  background: $color-bg-layout;
+}

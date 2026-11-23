@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Coffee mug">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <rect x="140" y="100" width="110" height="120" rx="12" fill="#c45c26"/>
+  <path d="M250 130 H290 Q310 130 310 155 Q310 180 290 180 H250" fill="none" stroke="#c45c26" stroke-width="14" stroke-linecap="round"/>
+  <ellipse cx="195" cy="100" rx="55" ry="14" fill="#8b3a1a"/>
+  <path d="M170 70 Q185 50 195 70" fill="none" stroke="#1f6f8b" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  <path d="M200 65 Q215 45 225 65" fill="none" stroke="#1f6f8b" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+</svg>
