@@ -143,3 +143,10 @@ Record library and technique choices here: what you used, what else you consider
 ### When stale data is acceptable
 
 Product list/detail (and `/me`) may show cached data for up to **30 seconds** without a background refetch. That is acceptable for browse: prices and copy rarely change mid-session, and a short lag beats a spinner on every revisit. **Not** acceptable to keep stale stock after checkout — successful orders invalidate all product queries so the next visit refetches. Placed orders are treated as immutable (`staleTime: Infinity`). Cart and session never go through Query.
+
+## D4-3 Memoization / virtualization
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| List re-renders | `React.memo` on `ProductCard` | Virtualize 5,000 rows; Context to isolate cart badge | Cart badge lives in `AppLayout`; memo stops 20 unchanged cards from re-rendering. |
+| Catalog window | Keep page size 20 | `react-window` over full catalog | API is paged; virtualizing 5k fights the contract and Ant Design grid. Documented in `docs/performance.md`. |

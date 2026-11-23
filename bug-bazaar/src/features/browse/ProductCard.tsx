@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from 'react'
+import { memo, type KeyboardEvent } from 'react'
 import { Card, Image, Space, Tag, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import type { Product, ProductCategory } from '../../api'
@@ -18,7 +18,7 @@ type ProductCardProps = {
   product: Product
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+function ProductCardComponent({ product }: ProductCardProps) {
   const navigate = useNavigate()
   const detailsPath = `/products/${product.id}`
   const priceLabel = formatPriceFromCents(product.price)
@@ -69,3 +69,6 @@ export function ProductCard({ product }: ProductCardProps) {
     </Card>
   )
 }
+
+/** Memoized so cart badge updates in AppLayout do not re-render unchanged cards. */
+export const ProductCard = memo(ProductCardComponent)
