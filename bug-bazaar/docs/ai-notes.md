@@ -151,3 +151,40 @@ Use MSW; no real backend.
 - Migrated product list/details, account (`/me`), and order confirmation to Query
 - Checkout invalidates `productKeys.all` after a successful order so stock refreshes
 - Documented 30s staleTime policy in `docs/decisions.md`
+
+## UI catalog / dashboard / minicart
+
+**Prompt:** Real product names and local images; market-stall theme; left sidebar with logo + filters; right minicart; mock API page.
+
+**Kept:**
+- 5,000 products, `p-0002` out of stock, URL filters, Redux cart, typed client
+- Ant Design Layout siders and Drawer for small screens
+
+**Changed and why:**
+- Seeded names from adjective × noun lists; local `/products/*.svg` instead of placehold.co
+- Filters moved into the left sider while search params stay the source of truth
+- MiniCart edits quantity/remove but checkout stays on `/cart` for idempotency
+
+## D4 — Harden
+
+**Prompt:** Accessibility, performance memo, live stock WebSocket, tests, CI, error boundary, Day 5 docs.
+
+**Kept:**
+- Existing 69+ behavior tests; pagination instead of virtualizing 5,000 rows
+- Memory auth token; Query for server cache
+
+**Changed and why:**
+- Skip link + `role="main"` + announced login Alert; Lighthouse a11y ≥ 0.90 on home/cart/login
+- `React.memo(ProductCard)` after measuring 20 re-renders on cart updates
+- Vite `/stock` WebSocket + `useLiveStock` with reconnect and unmount close
+- GitHub Actions CI under `bug-bazaar/`; `AppErrorBoundary` + `docs/monitoring.md`
+
+## AI mistake
+
+**Mistake:** First `useLiveStock` draft called `setStatus` synchronously inside `useEffect` (including an immediate `setStatus('idle')`), which failed the React Compiler / `react-hooks/set-state-in-effect` lint rule.
+
+**How caught:** `npm run lint` after D4-7 wiring. Fixed by deriving idle from empty ids and only setting status from socket event callbacks / reconnect timers.
+
+## Would not hand to AI
+
+The Day 5 reflection (`docs/reflection.md`) and the live walkthrough. Those need the engineer’s own scores, gaps, and spoken explanation of a hard bug — unexplained AI prose is capped at half points.
