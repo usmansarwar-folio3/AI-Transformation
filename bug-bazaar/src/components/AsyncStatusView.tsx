@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Alert, Button, Col, Empty, Space, Spin, Typography } from 'antd'
+import { Alert, Button, Col, Empty, Flex, Space, Spin, Typography } from 'antd'
 import { isError, isSuccess, mapApiErrorToUi, type RequestStatus } from '../api'
 import './async-status-view.scss'
 
@@ -31,11 +31,14 @@ export function AsyncStatusView<TData>({
   if (!isSuccess(status) && !isError(status)) {
     return (
       <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-        <Spin
+        <Flex
           className="async-status-view__spin"
-          description={loadingDescription}
-          size="large"
-        />
+          justify="center"
+          align="center"
+          vertical
+        >
+          <Spin description={loadingDescription} size="large" />
+        </Flex>
       </Col>
     )
   }

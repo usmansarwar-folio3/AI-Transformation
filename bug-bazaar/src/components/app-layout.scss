@@ -40,7 +40,6 @@
 
 .app-layout__logo {
   flex-shrink: 0;
-  border-radius: $border-radius;
 }
 
 .app-layout__brand-text {
@@ -70,16 +69,10 @@
   background: $color-bg-layout;
 }
 
-.app-layout__sticky-chrome {
+.app-layout__toolbar {
   position: sticky;
   inset-block-start: 0;
   z-index: 30;
-  width: 100%;
-  background: $color-bg-container;
-  border-block-end: 1px solid $color-border;
-}
-
-.app-layout__toolbar {
   width: 100%;
   padding: 12px 24px;
   background: $color-bg-container;
@@ -92,9 +85,21 @@
   align-items: center;
 }
 
+.app-layout__toolbar-label {
+  color: $color-text-secondary;
+}
+
 .app-layout__content {
   padding: 24px;
   min-height: 280px;
+
+  @media (max-width: 991px) {
+    padding: 16px;
+  }
+
+  @media (max-width: 575px) {
+    padding: 12px;
+  }
 }
 
 .app-layout__footer {

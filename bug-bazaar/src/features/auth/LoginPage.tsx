@@ -64,7 +64,7 @@ export function LoginPage() {
 
   return (
     <Row className="login-page" gutter={[16, 16]} justify="center" align="middle">
-      <Col xs={24} sm={20} md={14} lg={10} xl={8} xxl={6}>
+      <Col xs={24} sm={22} md={18} lg={14} xl={12} xxl={10}>
         <Card className="login-page__card">
           <Space className="login-page__brand" orientation="vertical" size="middle" align="center">
             <Image

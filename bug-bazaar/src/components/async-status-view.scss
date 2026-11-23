@@ -1,9 +1,8 @@
 @use '../styles/variables' as *;
 
 .async-status-view__spin {
-  display: block;
-  padding: 48px 0;
-  text-align: center;
+  width: 100%;
+  min-height: 240px;
 }
 
 .async-status-view__error {

@@ -1,4 +1,4 @@
-import { Button, Col, Image, Row, Space, Tag, Typography, message } from 'antd'
+import { Button, Card, Col, Image, Row, Space, Tag, Typography, message } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import { failure } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
@@ -48,57 +48,73 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
         }}
       >
         {(product) => (
-          <>
-            <Col xs={24} sm={24} md={10} lg={10} xl={8} xxl={8}>
-              <Image
-                className="product-details-page__image"
-                src={product.imageUrl}
-                alt={product.name}
-                preview={false}
-              />
-            </Col>
-            <Col xs={24} sm={24} md={14} lg={14} xl={16} xxl={16}>
-              <Space orientation="vertical" size="middle">
-                <Title level={2} className="product-details-page__title">
-                  {product.name}
-                </Title>
-                <Text className="product-details-page__price">
-                  {formatPriceFromCents(product.price)}
-                </Text>
-                <Text
-                  className="product-details-page__stock"
-                  type={product.stock === 0 ? 'danger' : undefined}
-                >
-                  {product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`}
-                </Text>
-                <Tag color={liveStatus === 'open' ? 'success' : 'default'}>
-                  Live stock: {liveStatus}
-                </Tag>
-                <Text className="product-details-page__category" type="secondary">
-                  Category: {product.category}
-                </Text>
-                <Button
-                  type="primary"
-                  className="product-details-page__add-to-cart"
-                  disabled={product.stock === 0}
-                  onClick={() => {
-                    dispatch(
-                      addItem({
-                        productId: product.id,
-                        name: product.name,
-                        price: product.price,
-                        stock: product.stock,
-                        quantity: 1,
-                      }),
-                    )
-                    void message.success(`${product.name} added to cart`)
-                  }}
-                >
-                  {product.stock === 0 ? 'Out of stock' : 'Add to cart'}
-                </Button>
-              </Space>
-            </Col>
-          </>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            <Card className="product-details-page__panel" bordered>
+              <Row gutter={[24, 24]} align="top">
+                <Col xs={24} sm={24} md={10} lg={10} xl={8} xxl={8}>
+                  <Image
+                    className="product-details-page__image"
+                    src={product.imageUrl}
+                    alt={product.name}
+                    preview={false}
+                  />
+                </Col>
+                <Col xs={24} sm={24} md={14} lg={14} xl={16} xxl={16}>
+                  <Space
+                    className="product-details-page__info"
+                    orientation="vertical"
+                    size="middle"
+                  >
+                    <Tag className="product-details-page__category">{product.category}</Tag>
+                    <Title level={2} className="product-details-page__title">
+                      {product.name}
+                    </Title>
+                    <Text className="product-details-page__price">
+                      {formatPriceFromCents(product.price)}
+                    </Text>
+                    <Space className="product-details-page__stock-row" size="small" wrap>
+                      <Text
+                        className="product-details-page__stock"
+                        type={product.stock === 0 ? 'danger' : undefined}
+                      >
+                        {product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`}
+                      </Text>
+                      <Tag
+                        color={
+                          liveStatus === 'open'
+                            ? 'success'
+                            : liveStatus === 'reconnecting'
+                              ? 'warning'
+                              : 'default'
+                        }
+                      >
+                        Live stock: {liveStatus}
+                      </Tag>
+                    </Space>
+                    <Button
+                      type="primary"
+                      className="product-details-page__add-to-cart"
+                      disabled={product.stock === 0}
+                      onClick={() => {
+                        dispatch(
+                          addItem({
+                            productId: product.id,
+                            name: product.name,
+                            price: product.price,
+                            stock: product.stock,
+                            quantity: 1,
+                          }),
+                        )
+                        void message.success(`${product.name} added to cart`)
+                      }}
+                    >
+                      {product.stock === 0 ? 'Out of stock' : 'Add to cart'}
+                    </Button>
+                  </Space>
+                </Col>
+              </Row>
+            </Card>
+          </Col>
         )}
       </AsyncStatusView>
 

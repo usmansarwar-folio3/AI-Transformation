@@ -10,11 +10,10 @@ import {
   ShopOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Badge, Button, Col, Drawer, Dropdown, Image, Layout, Row, Space, Typography } from 'antd'
+import { Badge, Button, Col, Drawer, Dropdown, Grid, Image, Layout, Row, Space, Typography } from 'antd'
 import type { MenuProps } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getAuthToken, logout as clearAuthToken } from '../api'
-import { StickyProductFilters } from '../features/browse/StickyProductFilters'
 import { MiniCart } from '../features/cart/MiniCart'
 import {
   clearSession,
@@ -28,6 +27,7 @@ import './app-layout.scss'
 
 const { Sider, Content, Footer } = Layout
 const { Text } = Typography
+const { useBreakpoint } = Grid
 
 const DEMO_TRIGGER_ITEMS: MenuProps['items'] = [
   { key: 'empty', label: 'Empty list (search=__none__)' },
@@ -40,12 +40,16 @@ export function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
+  const screens = useBreakpoint()
   const cartItemCount = useAppSelector(selectCartItemCount)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const hasToken = Boolean(getAuthToken())
   const signedIn = isLoggedIn && hasToken
   const [leftCollapsed, setLeftCollapsed] = useState(false)
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
+
+  const isDesktop = Boolean(screens.lg)
+  const siderCollapsed = isDesktop ? false : leftCollapsed
 
   function handleLogout() {
     clearAuthToken()
@@ -88,9 +92,12 @@ export function AppLayout() {
         theme="light"
         width={280}
         breakpoint="lg"
-        collapsedWidth={0}
-        collapsed={leftCollapsed}
+        collapsedWidth={isDesktop ? 280 : 0}
+        collapsed={siderCollapsed}
         onCollapse={(collapsed) => {
+          if (isDesktop) {
+            return
+          }
           setLeftCollapsed(collapsed)
         }}
         trigger={null}
@@ -186,9 +193,11 @@ export function AppLayout() {
       </Sider>
 
       <Layout className="app-layout__main">
-        <Space className="app-layout__sticky-chrome" orientation="vertical" size={0}>
-          <Row className="app-layout__toolbar" gutter={[16, 16]} align="middle">
-            <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
+        <Row className="app-layout__toolbar" gutter={[16, 16]} align="middle">
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
+            {isDesktop ? (
+              <Text className="app-layout__toolbar-label">The Bug Bazaar</Text>
+            ) : (
               <Button
                 className="app-layout__menu-toggle"
                 icon={leftCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
@@ -197,24 +206,22 @@ export function AppLayout() {
                   setLeftCollapsed((value) => !value)
                 }}
               />
-            </Col>
-            <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
-              <Badge count={cartItemCount} overflowCount={99} className="app-layout__cart-badge">
-                <Button
-                  icon={<ShoppingCartOutlined />}
-                  aria-label={cartAriaLabel}
-                  onClick={() => {
-                    setCartDrawerOpen(true)
-                  }}
-                >
-                  Cart
-                </Button>
-              </Badge>
-            </Col>
-          </Row>
-
-          <StickyProductFilters />
-        </Space>
+            )}
+          </Col>
+          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
+            <Badge count={cartItemCount} overflowCount={99} className="app-layout__cart-badge">
+              <Button
+                icon={<ShoppingCartOutlined />}
+                aria-label={cartAriaLabel}
+                onClick={() => {
+                  setCartDrawerOpen(true)
+                }}
+              >
+                Cart
+              </Button>
+            </Badge>
+          </Col>
+        </Row>
 
         <Content className="app-layout__content" id="main-content" role="main" tabIndex={-1}>
           <AppErrorBoundary>

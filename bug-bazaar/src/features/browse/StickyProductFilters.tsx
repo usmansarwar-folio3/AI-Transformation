@@ -12,8 +12,7 @@ import {
 import './sticky-product-filters.scss'
 
 /**
- * Sticky top filter bar. URL search params remain the source of truth.
- * Changing filters from any route navigates to `/` with those params.
+ * Sticky filter bar on the shop page. URL search params remain the source of truth.
  */
 export function StickyProductFilters() {
   const navigate = useNavigate()

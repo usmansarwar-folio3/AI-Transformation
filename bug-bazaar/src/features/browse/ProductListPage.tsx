@@ -6,6 +6,7 @@ import { AsyncStatusView } from '../../components/AsyncStatusView'
 import { useLiveStock } from '../stock'
 import { requestStatusFromQuery, useProductsQuery } from '../../query'
 import { ProductCard } from './ProductCard'
+import { StickyProductFilters } from './StickyProductFilters'
 import {
   formatProductResultRange,
   parseProductFilters,
@@ -159,9 +160,13 @@ export function ProductListPage() {
           Products
         </Title>
         <Paragraph className="product-list-page__hint">
-          Browse developer gear. Search and filters stay sticky at the top and sync to the URL.
-          Demo error states live under Demo triggers in the left sidebar.
+          Browse developer gear. Filters sync to the URL so refresh, copy-link, and Back work. Demo
+          error states live under Demo triggers in the left sidebar.
         </Paragraph>
+      </Col>
+
+      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+        <StickyProductFilters />
       </Col>
 
       <ProductListBody
