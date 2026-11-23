@@ -16,7 +16,11 @@ subscribeUnauthorized(() => {
 })
 
 async function enableMockApi(): Promise<void> {
-  if (!import.meta.env.DEV) {
+  const mocksEnabled =
+    import.meta.env.DEV ||
+    __BUGBAZAR_ENABLE_MOCKS__ === 'true' ||
+    import.meta.env.VITE_ENABLE_MOCKS === 'true'
+  if (!mocksEnabled) {
     return
   }
 
