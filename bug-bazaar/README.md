@@ -30,12 +30,36 @@ Copy `.env.example` to `.env` if you need local overrides. Only public values be
 | Variable | Description | Default |
 | --- | --- | --- |
 | `VITE_API_BASE_URL` | Base URL for the mock API | `/api` |
+| `BUGBAZAR_ENABLE_MOCKS` | When `true`, start MSW outside Vite DEV (preferred on Vercel) | unset (DEV-only) |
+| `VITE_ENABLE_MOCKS` | Same as above; Vite-prefixed alternative (Vercel may warn it is public) | unset |
 
 ## Mock API
 
-In development, MSW serves the shared contract from `src/mocks/` (5,000 seeded products). See `docs/api-contract.md` for shapes, status codes, and how to trigger each listed error on purpose.
+In development, MSW serves the shared contract from `src/mocks/` (5,000 seeded products). On Vercel, set `BUGBAZAR_ENABLE_MOCKS=true` so the same mock API runs in Production/Preview (there is no real backend). Vite bakes that flag in at build time. See `docs/api-contract.md` for shapes, status codes, and how to trigger each listed error on purpose.
 
 Demo login: any email, password `password`.
+
+## CI / CD (Vercel)
+
+Delivery flow:
+
+1. Work on `dev`.
+2. Open a PR into `main`.
+3. GitHub Actions CI runs (lint, typecheck, test, build) via `.github/workflows/ci.yml`.
+4. Merge when CI is green.
+5. Vercel (Git integration) auto-deploys `bug-bazaar` to a free `*.vercel.app` URL.
+
+**Vercel project checklist** (Settings):
+
+| Setting | Value |
+| --- | --- |
+| Root Directory | `bug-bazaar` |
+| Production Branch | `main` |
+| Build Command | `npm run build` |
+| Output Directory | `dist` |
+| Env | `BUGBAZAR_ENABLE_MOCKS=true` (required for the training mock API) |
+
+Optional: `VITE_API_BASE_URL` if the API base is not `/api`. Custom domains are optional; Vercel provides `*.vercel.app` by default. SPA client routes are handled by `vercel.json` rewrites.
 
 ## Routes (D2-1)
 
