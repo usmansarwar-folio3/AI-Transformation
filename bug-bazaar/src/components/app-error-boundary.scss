@@ -1,0 +1,11 @@
+@use '../styles/variables' as *;
+
+.app-error-boundary {
+  width: 100%;
+  padding-block: 32px;
+}
+
+.app-error-boundary__result {
+  background: $color-bg-container;
+  border-radius: $border-radius;
+}

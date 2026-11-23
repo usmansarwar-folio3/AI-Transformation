@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   ApiOutlined,
   LogoutOutlined,
@@ -20,6 +20,7 @@ import {
   useAppDispatch,
   useAppSelector,
 } from '../store'
+import { AppErrorBoundary } from './AppErrorBoundary'
 import './app-layout.scss'
 
 const { Sider, Content, Footer } = Layout
@@ -39,13 +40,7 @@ export function AppLayout() {
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
 
   const showRightSider = Boolean(screens.lg)
-  const hideCartDrawer = showRightSider
-
-  useEffect(() => {
-    if (hideCartDrawer) {
-      setCartDrawerOpen(false)
-    }
-  }, [hideCartDrawer])
+  const cartDrawerVisible = showRightSider ? false : cartDrawerOpen
 
   function handleLogout() {
     clearAuthToken()
@@ -211,7 +206,9 @@ export function AppLayout() {
         </Row>
 
         <Content className="app-layout__content" id="main-content" role="main" tabIndex={-1}>
-          <Outlet />
+          <AppErrorBoundary>
+            <Outlet />
+          </AppErrorBoundary>
         </Content>
 
         <Footer className="app-layout__footer">The Bug Bazaar</Footer>
@@ -232,7 +229,7 @@ export function AppLayout() {
         className="app-layout__cart-drawer"
         title="Cart"
         placement="right"
-        open={cartDrawerOpen}
+        open={cartDrawerVisible}
         onClose={() => {
           setCartDrawerOpen(false)
         }}

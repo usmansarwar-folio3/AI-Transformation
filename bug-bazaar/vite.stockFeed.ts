@@ -1,3 +1,5 @@
+import type { IncomingMessage } from 'node:http'
+import type { Duplex } from 'node:stream'
 import type { Plugin } from 'vite'
 import { WebSocketServer, type WebSocket } from 'ws'
 
@@ -17,19 +19,23 @@ export function stockFeedPlugin(): Plugin {
       const wss = new WebSocketServer({ noServer: true })
       const clients = new Set<WebSocket>()
 
-      server.httpServer?.on('upgrade', (request, socket, head) => {
-        const { pathname } = new URL(request.url ?? '', 'http://localhost')
-        if (pathname !== '/stock') {
-          return
-        }
+      server.httpServer?.on(
+        'upgrade',
+        (request: IncomingMessage, socket: Duplex, head: Buffer) => {
+          const host = request.headers.host ?? 'localhost'
+          const { pathname } = new URL(request.url ?? '/', `http://${host}`)
+          if (pathname !== '/stock') {
+            return
+          }
 
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          clients.add(ws)
-          ws.on('close', () => {
-            clients.delete(ws)
+          wss.handleUpgrade(request, socket, head, (ws) => {
+            clients.add(ws)
+            ws.on('close', () => {
+              clients.delete(ws)
+            })
           })
-        })
-      })
+        },
+      )
 
       const timer = setInterval(() => {
         if (clients.size === 0) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { applyStockUpdate } from '../../mocks/seed'
 import { applyStockTickToCache } from './applyStockTickToCache'
@@ -18,15 +18,15 @@ function stockSocketUrl(): string {
  */
 export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<LiveStockStatus>('idle')
-  const watchedKey = productIds.slice().sort().join(',')
-  const watchedIds = useMemo(() => new Set(productIds), [watchedKey])
-  const watchedRef = useRef(watchedIds)
-  watchedRef.current = watchedIds
+  const [status, setStatus] = useState<LiveStockStatus>('connecting')
+  const watchedKey = [...productIds].sort().join(',')
+  const watchedIds = useMemo(
+    () => new Set(watchedKey === '' ? [] : watchedKey.split(',')),
+    [watchedKey],
+  )
 
   useEffect(() => {
-    if (typeof window === 'undefined' || productIds.length === 0) {
-      setStatus('idle')
+    if (typeof window === 'undefined' || watchedIds.size === 0) {
       return
     }
 
@@ -46,10 +46,10 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
       if (disposed) {
         return
       }
-      setStatus('reconnecting')
       const delayMs = Math.min(1000 * 2 ** retryAttempt, 10_000)
       retryAttempt += 1
       reconnectTimer = window.setTimeout(() => {
+        setStatus('reconnecting')
         connect()
       }, delayMs)
     }
@@ -60,7 +60,6 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
       }
 
       clearReconnect()
-      setStatus(retryAttempt === 0 ? 'connecting' : 'reconnecting')
       socket = new WebSocket(stockSocketUrl())
 
       socket.addEventListener('open', () => {
@@ -91,7 +90,7 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
         const tick = tickResult.data
         applyStockUpdate(tick.productId, tick.stock)
 
-        if (!watchedRef.current.has(tick.productId)) {
+        if (!watchedIds.has(tick.productId)) {
           return
         }
 
@@ -100,7 +99,6 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
 
       socket.addEventListener('close', () => {
         if (disposed) {
-          setStatus('closed')
           return
         }
         scheduleReconnect()
@@ -116,12 +114,15 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
     return () => {
       disposed = true
       clearReconnect()
-      setStatus('closed')
       if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
         socket.close()
       }
     }
-  }, [productIds.length, queryClient, watchedKey])
+  }, [queryClient, watchedIds])
+
+  if (watchedIds.size === 0) {
+    return 'idle'
+  }
 
   return status
 }
