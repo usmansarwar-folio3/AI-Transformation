@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Alert, Button, Col, Form, Input, Row, Typography } from 'antd'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import { ApiClientError, getAuthToken, login } from '../../api'
+import { getAuthToken, login, mapApiErrorToUi, toRequestError } from '../../api'
 import { resolveReturnTo } from '../../auth/returnTo'
 import { selectIsLoggedIn, setUser, useAppDispatch, useAppSelector } from '../../store'
 import './login-page.scss'
@@ -20,9 +20,10 @@ export function LoginPage() {
   const [searchParams] = useSearchParams()
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const hasToken = Boolean(getAuthToken())
+  const [form] = Form.useForm<LoginFormValues>()
 
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [formAlert, setFormAlert] = useState<{ title: string; description: string } | null>(null)
 
   const returnTo = resolveReturnTo(location.state, searchParams, '/')
 
@@ -36,7 +37,7 @@ export function LoginPage() {
     }
 
     setIsSubmitting(true)
-    setErrorMessage(null)
+    setFormAlert(null)
 
     try {
       const result = await login({
@@ -46,11 +47,16 @@ export function LoginPage() {
       dispatch(setUser(result.user))
       void navigate(returnTo, { replace: true })
     } catch (error: unknown) {
-      if (error instanceof ApiClientError) {
-        setErrorMessage(error.message)
-      } else {
-        setErrorMessage('Could not sign in. Try again.')
+      const ui = mapApiErrorToUi(toRequestError(error))
+      if (ui.fieldErrors) {
+        form.setFields(
+          Object.entries(ui.fieldErrors).map(([name, message]) => ({
+            name: name as keyof LoginFormValues,
+            errors: [message],
+          })),
+        )
       }
+      setFormAlert({ title: ui.title, description: ui.description })
     } finally {
       setIsSubmitting(false)
     }
@@ -68,6 +74,7 @@ export function LoginPage() {
         </Paragraph>
 
         <Form
+          form={form}
           className="login-page__form"
           layout="vertical"
           requiredMark={false}
@@ -92,12 +99,13 @@ export function LoginPage() {
             <Input.Password autoComplete="current-password" aria-label="Password" />
           </Form.Item>
 
-          {errorMessage ? (
+          {formAlert ? (
             <Alert
               className="login-page__error"
               type="error"
               showIcon
-              message={errorMessage}
+              message={formAlert.title}
+              description={formAlert.description}
             />
           ) : null}
 

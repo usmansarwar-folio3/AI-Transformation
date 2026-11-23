@@ -2,11 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { Col, Pagination, Row, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 import {
-  ApiClientError,
   failure,
   getProducts,
   loading,
   success,
+  toRequestError,
   type ProductList,
   type RequestStatus,
 } from '../../api'
@@ -86,17 +86,7 @@ function ProductListResults({
         if (controller.signal.aborted || requestId !== requestIdRef.current) {
           return
         }
-        if (error instanceof ApiClientError) {
-          setStatus(failure(error.toRequestError()))
-          return
-        }
-        setStatus(
-          failure({
-            httpStatus: 0,
-            code: 'UNKNOWN',
-            message: 'Could not load products.',
-          }),
-        )
+        setStatus(failure(toRequestError(error)))
       })
 
     return () => {

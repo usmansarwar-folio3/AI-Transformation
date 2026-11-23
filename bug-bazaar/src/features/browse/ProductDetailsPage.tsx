@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { Button, Col, Image, Row, Space, Typography, message } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ApiClientError,
   failure,
   getProduct,
   loading,
   success,
+  toRequestError,
   type Product,
   type RequestStatus,
 } from '../../api'
@@ -45,17 +45,7 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
         if (controller.signal.aborted) {
           return
         }
-        if (error instanceof ApiClientError) {
-          setStatus(failure(error.toRequestError()))
-          return
-        }
-        setStatus(
-          failure({
-            httpStatus: 0,
-            code: 'UNKNOWN',
-            message: 'Could not load this product.',
-          }),
-        )
+        setStatus(failure(toRequestError(error)))
       })
 
     return () => {

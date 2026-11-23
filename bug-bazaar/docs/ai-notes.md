@@ -123,3 +123,16 @@ Use MSW; no real backend.
 - Cart checkout redirects to login with return-to instead of an inline form
 - 401 on authenticated requests clears token + Redux session via an unauthorized subscriber
 - Wrote `docs/auth.md` for the memory vs localStorage trade-off
+
+## D3-4 — Backend errors
+
+**Prompt:** Consistent API error → UI mapping (400 fields, 401 sign-out, 404, 409 named OOS, 500 retry); never show raw API messages.
+
+**Kept:**
+- Zod + `ApiClientError` / `RequestError` at the boundary
+- Existing 401 token/session clear from D3-3
+
+**Changed and why:**
+- Added `mapApiErrorToUi` / `toRequestError` as the single status→copy path
+- AsyncStatusView, login, and checkout consume mapped titles/descriptions (Retry only when appropriate)
+- Field errors use app copy keyed by field name, not raw API detail strings

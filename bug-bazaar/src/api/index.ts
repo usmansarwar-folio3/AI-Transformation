@@ -36,3 +36,10 @@ export {
   type RequestStatus,
   type User,
 } from './client'
+export {
+  mapApiErrorToUi,
+  toRequestError,
+  type ApiErrorUi,
+  type ApiErrorUiKind,
+  type MapApiErrorOptions,
+} from './mapApiErrorToUi'

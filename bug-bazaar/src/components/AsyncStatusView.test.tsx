@@ -28,7 +28,7 @@ function renderStatus(
 }
 
 describe('AsyncStatusView', () => {
-  it('shows loading, empty, error with retry, and success consistently', async () => {
+  it('shows loading, empty, mapped error with retry, and success consistently', async () => {
     const user = userEvent.setup()
     const onRetry = vi.fn()
 
@@ -49,10 +49,23 @@ describe('AsyncStatusView', () => {
         onRetry,
       ),
     )
-    expect(screen.getByText('Something went wrong')).toBeInTheDocument()
-    expect(screen.getByText('Forced product list failure')).toBeInTheDocument()
+    expect(screen.getByText('Something went wrong on our side')).toBeInTheDocument()
+    expect(screen.queryByText('Forced product list failure')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Retry' }))
     expect(onRetry).toHaveBeenCalledTimes(1)
+
+    rerender(
+      renderStatus(
+        failure({
+          httpStatus: 404,
+          code: 'NOT_FOUND',
+          message: 'Product not found',
+        }),
+        onRetry,
+      ),
+    )
+    expect(screen.getByText('Not found')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Retry' })).not.toBeInTheDocument()
 
     rerender(renderStatus(success(['duck']), onRetry))
     expect(screen.getByText('duck')).toBeInTheDocument()

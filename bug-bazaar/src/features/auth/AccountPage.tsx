@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { Button, Col, Row, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import {
-  ApiClientError,
   failure,
   getMe,
   loading,
   logout as clearAuthToken,
   success,
+  toRequestError,
   type RequestStatus,
   type User,
 } from '../../api'
@@ -38,17 +38,7 @@ export function AccountPage() {
         if (controller.signal.aborted) {
           return
         }
-        if (error instanceof ApiClientError) {
-          setStatus(failure(error.toRequestError()))
-          return
-        }
-        setStatus(
-          failure({
-            httpStatus: 0,
-            code: 'UNKNOWN',
-            message: 'Could not load account.',
-          }),
-        )
+        setStatus(failure(toRequestError(error)))
       })
 
     return () => {

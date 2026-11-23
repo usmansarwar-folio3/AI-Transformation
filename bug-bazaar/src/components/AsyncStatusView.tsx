@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Alert, Button, Col, Empty, Space, Spin, Typography } from 'antd'
-import { isError, isSuccess, type RequestStatus } from '../api'
+import { isError, isSuccess, mapApiErrorToUi, type RequestStatus } from '../api'
 import './async-status-view.scss'
 
 const { Text } = Typography
@@ -16,8 +16,8 @@ type AsyncStatusViewProps<TData> = {
 }
 
 /**
- * Shared loading / empty / error / success chrome for browse pages (D2-3).
- * Empty is only shown after a successful response.
+ * Shared loading / empty / error / success chrome.
+ * Error copy comes from mapApiErrorToUi (never raw API messages).
  */
 export function AsyncStatusView<TData>({
   status,
@@ -41,18 +41,21 @@ export function AsyncStatusView<TData>({
   }
 
   if (isError(status)) {
+    const errorUi = mapApiErrorToUi(status.error)
     return (
       <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
         <Alert
           className="async-status-view__error"
           type="error"
           showIcon
-          message="Something went wrong"
-          description={status.error.message}
+          message={errorUi.title}
+          description={errorUi.description}
           action={
-            <Button className="async-status-view__retry" type="primary" onClick={onRetry}>
-              Retry
-            </Button>
+            errorUi.showRetry ? (
+              <Button className="async-status-view__retry" type="primary" onClick={onRetry}>
+                Retry
+              </Button>
+            ) : undefined
           }
         />
       </Col>

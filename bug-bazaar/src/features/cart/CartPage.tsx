@@ -11,9 +11,9 @@ import {
 } from 'antd'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  ApiClientError,
   createOrder,
   getAuthToken,
+  toRequestError,
   type OrderCreated,
   type RequestError,
 } from '../../api'
@@ -86,19 +86,15 @@ export function CartPage() {
       idempotencyKeyRef.current = null
       void navigate(`/orders/${order.id}`)
     } catch (error: unknown) {
-      if (error instanceof ApiClientError) {
-        setCheckoutError(error.toRequestError())
-      } else {
-        setCheckoutError({
-          httpStatus: 0,
-          code: 'UNKNOWN',
-          message: 'Checkout failed. Try again.',
-        })
-      }
+      setCheckoutError(toRequestError(error))
     } finally {
       setIsCheckingOut(false)
     }
   }
+
+  const checkoutErrorUi = checkoutError
+    ? formatCheckoutErrorMessage(checkoutError, items)
+    : null
 
   return (
     <Row className="cart-page" gutter={[16, 16]}>
@@ -197,24 +193,26 @@ export function CartPage() {
             ) : (
               <Space orientation="vertical" size="middle">
                 <Text type="secondary">Signed in as {user?.email}</Text>
-                {checkoutError ? (
+                {checkoutErrorUi ? (
                   <Alert
                     className="cart-page__error"
                     type="error"
                     showIcon
-                    message="Checkout failed"
-                    description={formatCheckoutErrorMessage(checkoutError, items)}
+                    message={checkoutErrorUi.title}
+                    description={checkoutErrorUi.description}
                     action={
-                      <Button
-                        type="primary"
-                        loading={isCheckingOut}
-                        disabled={isCheckingOut}
-                        onClick={() => {
-                          void handleCheckout()
-                        }}
-                      >
-                        Retry checkout
-                      </Button>
+                      checkoutErrorUi.showRetry ? (
+                        <Button
+                          type="primary"
+                          loading={isCheckingOut}
+                          disabled={isCheckingOut}
+                          onClick={() => {
+                            void handleCheckout()
+                          }}
+                        >
+                          Retry checkout
+                        </Button>
+                      ) : undefined
                     }
                   />
                 ) : (

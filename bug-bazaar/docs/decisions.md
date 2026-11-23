@@ -120,3 +120,12 @@ Record library and technique choices here: what you used, what else you consider
 | 401 handling | Clear token in `client.ts` when a Bearer was sent; notify Redux via `subscribeUnauthorized` | Clear on every 401 including failed login | Failed login must not wipe an unrelated session; expired tokens must. |
 | Route protection | `RequireAuth` for `/account` (and order confirmation); checkout redirects to login with `state.from` | Protect entire `/cart` | Cart browsing stays public; checkout and account require a session; return-to restores the attempt. |
 | Double-submit | `loading` + `disabled` on Sign in while pending | Ignore only via ref | Meets done-when; form also uses Ant Design `disabled={isSubmitting}`. |
+
+## D3-4 Backend errors
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Mapping layer | `mapApiErrorToUi(RequestError)` → title/description/fieldErrors/showRetry | Per-page `error.message` strings; show API `message` | One status→copy table; raw API messages/codes never primary UI text. |
+| 400 | Friendly field copy from known keys (not API detail strings) | Pass through `details` values | Field errors without leaking server wording. |
+| 401 / 404 / 409 / 500 | Fixed titles + descriptions; 409 names item from details/cart; Retry only when `showRetry` | Always show Retry | Matches buy.md: sign-out already in client; Not Found; named OOS; retry for server faults. |
+| Wiring | AsyncStatusView + login form fields + checkout alert all call the mapper | Duplicate switch statements | List/details/account/order/login/checkout stay consistent. |

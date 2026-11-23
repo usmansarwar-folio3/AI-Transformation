@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { Button, Col, Row, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  ApiClientError,
   failure,
   getOrder,
   loading,
   success,
+  toRequestError,
   type OrderStatus,
   type RequestStatus,
 } from '../../api'
@@ -38,17 +38,7 @@ function OrderConfirmationContent({ orderId }: OrderConfirmationContentProps) {
         if (controller.signal.aborted) {
           return
         }
-        if (error instanceof ApiClientError) {
-          setStatus(failure(error.toRequestError()))
-          return
-        }
-        setStatus(
-          failure({
-            httpStatus: 0,
-            code: 'UNKNOWN',
-            message: 'Could not load this order.',
-          }),
-        )
+        setStatus(failure(toRequestError(error)))
       })
 
     return () => {

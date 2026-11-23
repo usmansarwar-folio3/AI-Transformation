@@ -13,8 +13,8 @@ const cartItems: CartItem[] = [
 ]
 
 describe('formatCheckoutErrorMessage', () => {
-  it('names the out-of-stock product from API details', () => {
-    const message = formatCheckoutErrorMessage(
+  it('names the out-of-stock product without exposing raw API codes', () => {
+    const ui = formatCheckoutErrorMessage(
       {
         httpStatus: 409,
         code: 'OUT_OF_STOCK',
@@ -28,11 +28,14 @@ describe('formatCheckoutErrorMessage', () => {
       cartItems,
     )
 
-    expect(message).toBe('Ducks #2 is out of stock (0 available).')
+    expect(ui.title).toBe('Out of stock')
+    expect(ui.description).toContain('Ducks #2')
+    expect(ui.description).not.toContain('OUT_OF_STOCK')
+    expect(ui.showRetry).toBe(true)
   })
 
   it('falls back to the cart line name when API omits productName', () => {
-    const message = formatCheckoutErrorMessage(
+    const ui = formatCheckoutErrorMessage(
       {
         httpStatus: 409,
         code: 'OUT_OF_STOCK',
@@ -42,6 +45,6 @@ describe('formatCheckoutErrorMessage', () => {
       cartItems,
     )
 
-    expect(message).toBe('Ducks #2 is out of stock (0 available).')
+    expect(ui.description).toContain('Ducks #2')
   })
 })
