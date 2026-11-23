@@ -28,6 +28,13 @@
   outline-offset: 2px;
 }
 
+.product-card__cover-button {
+  display: block;
+  width: 100%;
+  height: auto;
+  padding: 0;
+}
+
 .product-card__image {
   width: 100%;
   height: 160px;
@@ -37,6 +44,7 @@
 
 .product-card__body {
   width: 100%;
+  cursor: pointer;
 }
 
 .product-card__name {
@@ -49,4 +57,13 @@
 
 .product-card__stock {
   color: $color-text-secondary;
+}
+
+.product-card .ant-card-actions {
+  background: $color-bg-container;
+  border-block-start: 1px solid $color-card-border;
+}
+
+.product-card .ant-card-actions > li {
+  margin: 8px 12px;
 }

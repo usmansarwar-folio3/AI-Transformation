@@ -1,9 +1,11 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Typography } from 'antd'
+import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '../../api'
+import { createAppStore, selectCartItemCount } from '../../store'
 import { ProductCard } from './ProductCard'
 
 const sampleProduct: Product = {
@@ -16,39 +18,84 @@ const sampleProduct: Product = {
   imageUrl: '/products/keyboard-1.svg',
 }
 
+const navigateMock = vi.fn()
+
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => navigateMock,
+  }
+})
+
 function LocationProbe() {
   const location = useLocation()
   return <Typography.Text data-testid="path">{location.pathname}</Typography.Text>
 }
 
+afterEach(() => {
+  cleanup()
+  navigateMock.mockReset()
+})
+
 describe('ProductCard', () => {
   it('shows dollars from cents and opens details with Enter', async () => {
     const user = userEvent.setup()
+    const store = createAppStore()
 
     render(
-      <MemoryRouter initialEntries={['/']}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <>
-                <ProductCard product={sampleProduct} />
-                <LocationProbe />
-              </>
-            }
-          />
-          <Route path="/products/:productId" element={<LocationProbe />} />
-        </Routes>
-      </MemoryRouter>,
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <ProductCard product={sampleProduct} />
+                  <LocationProbe />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </Provider>,
     )
 
     expect(screen.getByText('$19.99')).toBeInTheDocument()
     expect(screen.getByText('5 in stock')).toBeInTheDocument()
 
-    const card = screen.getByRole('link', { name: /Harbor Tactile Keyboard/i })
-    card.focus()
+    const details = screen.getByRole('link', { name: /Harbor Tactile Keyboard/i })
+    details.focus()
     await user.keyboard('{Enter}')
 
-    expect(screen.getByTestId('path')).toHaveTextContent('/products/p-0001')
+    expect(navigateMock).toHaveBeenCalledWith('/products/p-0001')
+  })
+
+  it('adds the product to the cart without navigating', async () => {
+    const user = userEvent.setup()
+    const store = createAppStore()
+
+    render(
+      <Provider store={store}>
+        <MemoryRouter initialEntries={['/']}>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  <ProductCard product={sampleProduct} />
+                  <LocationProbe />
+                </>
+              }
+            />
+          </Routes>
+        </MemoryRouter>
+      </Provider>,
+    )
+
+    await user.click(screen.getByRole('button', { name: 'Add to cart' }))
+
+    expect(selectCartItemCount(store.getState())).toBe(1)
+    expect(navigateMock).not.toHaveBeenCalled()
   })
 })
