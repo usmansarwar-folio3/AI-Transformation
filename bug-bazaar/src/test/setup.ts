@@ -19,8 +19,25 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 })
 
+/**
+ * Default stub so React trees that call `useLiveStock` do not open a real
+ * socket under MSW. Live-stock unit tests replace this with a FakeWebSocket.
+ */
+class SilentWebSocket {
+  static OPEN = 1
+  static CONNECTING = 0
+  static CLOSING = 2
+  static CLOSED = 3
+  readyState = SilentWebSocket.CLOSED
+  addEventListener() {}
+  removeEventListener() {}
+  close() {}
+}
+
+vi.stubGlobal('WebSocket', SilentWebSocket)
+
 beforeAll(() => {
-  server.listen({ onUnhandledFrame: 'error' })
+  server.listen({ onUnhandledRequest: 'error' })
 })
 
 afterEach(() => {

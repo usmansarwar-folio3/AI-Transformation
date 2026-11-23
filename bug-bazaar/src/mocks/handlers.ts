@@ -1,6 +1,9 @@
-import { delay, http, HttpResponse } from 'msw'
+import { delay, http, HttpResponse, ws } from 'msw'
 import type { Product } from '../api/schemas'
 import { PRODUCT_COUNT, PRODUCTS_PAGE_SIZE, productCatalog } from './seed'
+
+/** Vitest / MSW: acknowledge the Vite live-stock socket without owning the feed. */
+const stockSocket = ws.link('ws://localhost:3000/stock')
 
 const DEMO_PASSWORD = 'password'
 const VALID_TOKEN = 'demo-token'
@@ -232,6 +235,10 @@ export const handlers = [
     }
 
     return HttpResponse.json({ id: order.id, status: order.status }, { status: 200 })
+  }),
+
+  stockSocket.addEventListener('connection', () => {
+    // Live stock is driven by the Vite plugin in the browser; tests only silence MSW.
   }),
 ]
 
