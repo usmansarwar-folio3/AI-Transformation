@@ -62,6 +62,10 @@ export function AppLayout() {
 
   return (
     <Layout className="app-layout">
+      <Button type="link" className="app-layout__skip-link" href="#main-content">
+        Skip to main content
+      </Button>
+
       <Sider
         className="app-layout__sider app-layout__sider--left"
         theme="dark"
@@ -206,7 +210,7 @@ export function AppLayout() {
           </Col>
         </Row>
 
-        <Content className="app-layout__content" id="main-content">
+        <Content className="app-layout__content" id="main-content" role="main" tabIndex={-1}>
           <Outlet />
         </Content>
 
@@ -232,7 +236,7 @@ export function AppLayout() {
         onClose={() => {
           setCartDrawerOpen(false)
         }}
-        width={320}
+        size={320}
         destroyOnHidden
       >
         <MiniCart

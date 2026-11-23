@@ -104,7 +104,8 @@ export function LoginPage() {
               className="login-page__error"
               type="error"
               showIcon
-              message={formAlert.title}
+              role="alert"
+              title={formAlert.title}
               description={formAlert.description}
             />
           ) : null}
