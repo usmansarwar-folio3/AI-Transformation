@@ -5,8 +5,14 @@ export const themeConfig: ThemeConfig = {
   token: themeToken,
   components: {
     Layout: {
-      headerBg: themeToken.colorBgContainer,
+      siderBg: '#1c1917',
       bodyBg: themeToken.colorBgLayout,
+      headerBg: '#1c1917',
+      triggerBg: '#1c1917',
+    },
+    Card: {
+      borderRadiusLG: themeToken.borderRadius,
+      paddingLG: 16,
     },
   },
 }

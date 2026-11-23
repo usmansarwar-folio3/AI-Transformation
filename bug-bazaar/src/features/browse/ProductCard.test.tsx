@@ -8,12 +8,12 @@ import { ProductCard } from './ProductCard'
 
 const sampleProduct: Product = {
   id: 'p-0001',
-  name: 'Keyboards #1',
+  name: 'Harbor Tactile Keyboard',
   price: 1999,
   category: 'keyboards',
   stock: 5,
   rating: 4.2,
-  imageUrl: '/images/keyboards-1.png',
+  imageUrl: '/products/keyboard-1.svg',
 }
 
 function LocationProbe() {
@@ -45,7 +45,7 @@ describe('ProductCard', () => {
     expect(screen.getByText('$19.99')).toBeInTheDocument()
     expect(screen.getByText('5 in stock')).toBeInTheDocument()
 
-    const card = screen.getByRole('link', { name: /Keyboards #1/i })
+    const card = screen.getByRole('link', { name: /Harbor Tactile Keyboard/i })
     card.focus()
     await user.keyboard('{Enter}')
 

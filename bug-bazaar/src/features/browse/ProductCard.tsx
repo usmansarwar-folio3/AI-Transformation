@@ -1,11 +1,18 @@
 import type { KeyboardEvent } from 'react'
-import { Card, Image, Space, Typography } from 'antd'
+import { Card, Image, Space, Tag, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import type { Product } from '../../api'
+import type { Product, ProductCategory } from '../../api'
 import { formatPriceFromCents } from '../../utils/formatPrice'
 import './product-card.scss'
 
 const { Text } = Typography
+
+const CATEGORY_TAG_COLOR: Record<ProductCategory, string> = {
+  keyboards: 'orange',
+  ducks: 'gold',
+  coffee: 'green',
+  stickers: 'blue',
+}
 
 type ProductCardProps = {
   product: Product
@@ -48,6 +55,9 @@ export function ProductCard({ product }: ProductCardProps) {
       onKeyDown={handleKeyDown}
     >
       <Space className="product-card__body" orientation="vertical" size={4}>
+        <Tag className="product-card__category" color={CATEGORY_TAG_COLOR[product.category]}>
+          {product.category}
+        </Tag>
         <Text className="product-card__name" strong>
           {product.name}
         </Text>

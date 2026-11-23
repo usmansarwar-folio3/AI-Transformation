@@ -2,18 +2,19 @@ import type { ThemeConfig } from 'antd'
 
 /**
  * Ant Design design tokens. Keep `src/styles/_variables.scss` aligned with these values.
+ * Market-stall palette: warm paper, burnt-orange primary, dark sider.
  */
 export const themeToken: NonNullable<ThemeConfig['token']> = {
-  colorPrimary: '#1677ff',
+  colorPrimary: '#c45c26',
   colorSuccess: '#52c41a',
   colorWarning: '#faad14',
   colorError: '#ff4d4f',
-  colorInfo: '#1677ff',
-  colorText: '#000000e0',
-  colorTextSecondary: '#00000073',
+  colorInfo: '#1f6f8b',
+  colorText: 'rgba(28, 25, 23, 0.88)',
+  colorTextSecondary: 'rgba(28, 25, 23, 0.45)',
   colorBgContainer: '#ffffff',
-  colorBgLayout: '#f5f5f5',
-  borderRadius: 6,
+  colorBgLayout: '#f6f1ea',
+  borderRadius: 10,
   fontFamily:
     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
 }
