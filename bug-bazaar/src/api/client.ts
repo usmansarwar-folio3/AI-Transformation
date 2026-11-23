@@ -22,6 +22,7 @@ import {
   type ProductSort,
   type User,
 } from './schemas'
+import { notifyUnauthorized } from '../auth/unauthorized'
 import { requestErrorFromApi, type RequestError } from './requestStatus'
 
 export type {
@@ -130,7 +131,8 @@ async function request<T>(
     headers.set('Content-Type', 'application/json')
   }
 
-  if (authToken) {
+  const sentAuth = Boolean(authToken)
+  if (sentAuth && authToken) {
     headers.set('Authorization', `Bearer ${authToken}`)
   }
 
@@ -142,6 +144,11 @@ async function request<T>(
   const payload = await parseJson(response)
 
   if (!response.ok) {
+    // Failed login (no Bearer) must not clear session; expired/invalid token must.
+    if (response.status === 401 && sentAuth) {
+      authToken = null
+      notifyUnauthorized()
+    }
     const parsedError = apiErrorSchema.safeParse(payload)
     throw new ApiClientError(response.status, parsedError.success ? parsedError.data : null)
   }

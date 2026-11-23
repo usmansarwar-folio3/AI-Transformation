@@ -110,4 +110,13 @@ Record library and technique choices here: what you used, what else you consider
 | Cart persistence | `localStorage` key `bug-bazaar.cart` (cart slice only) via hydrate + `store.subscribe` | `redux-persist`; sessionStorage | Cart is not a credential and must survive reload; token/session stay out of storage. |
 | Idempotency | One `crypto.randomUUID()` per checkout attempt, kept in a ref and reused on Retry | New key on every click | MSW/API return the same order for the same key; retries cannot create a second order. New key when the cart changes. |
 | 409 copy | Format from API `details.productName` / `productId` (+ cart name fallback) | Raw `error.message` only | Done criterion: the out-of-stock item is named. |
-| Checkout auth | Minimal sign-in form on the cart page (`login` + `setUser`) | Full D3-3 login/account routes | Orders require a Bearer token; full auth UX deferred to D3-3. |
+| Checkout auth | Dedicated `/login` + return-to; cart redirects for checkout | Inline cart login form only | Full login/account routes land in D3-3; cart stays browsable while checkout is protected. |
+
+## D3-3 Auth
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Token storage | In-memory via API client helpers | `localStorage` / cookies | Contract + security trade-off documented in `docs/auth.md`. |
+| 401 handling | Clear token in `client.ts` when a Bearer was sent; notify Redux via `subscribeUnauthorized` | Clear on every 401 including failed login | Failed login must not wipe an unrelated session; expired tokens must. |
+| Route protection | `RequireAuth` for `/account` (and order confirmation); checkout redirects to login with `state.from` | Protect entire `/cart` | Cart browsing stays public; checkout and account require a session; return-to restores the attempt. |
+| Double-submit | `loading` + `disabled` on Sign in while pending | Ignore only via ref | Meets done-when; form also uses Ant Design `disabled={isSubmitting}`. |

@@ -4,19 +4,16 @@ import {
   Button,
   Col,
   Divider,
-  Form,
-  Input,
   InputNumber,
   Row,
   Space,
   Typography,
 } from 'antd'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
   ApiClientError,
   createOrder,
   getAuthToken,
-  login,
   type OrderCreated,
   type RequestError,
 } from '../../api'
@@ -28,7 +25,6 @@ import {
   selectIsLoggedIn,
   selectSessionUser,
   setQuantity,
-  setUser,
   useAppDispatch,
   useAppSelector,
 } from '../../store'
@@ -39,13 +35,9 @@ import './cart-page.scss'
 
 const { Title, Text, Paragraph } = Typography
 
-type DemoLoginValues = {
-  email: string
-  password: string
-}
-
 export function CartPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
   const items = useAppSelector(selectCartItems)
   const totalCents = useAppSelector(selectCartTotalCents)
@@ -54,8 +46,6 @@ export function CartPage() {
 
   const [checkoutError, setCheckoutError] = useState<RequestError | null>(null)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
-  const [isSigningIn, setIsSigningIn] = useState(false)
-  const [loginError, setLoginError] = useState<string | null>(null)
   const idempotencyKeyRef = useRef<string | null>(null)
 
   const hasToken = Boolean(getAuthToken())
@@ -68,8 +58,16 @@ export function CartPage() {
     return idempotencyKeyRef.current
   }
 
+  function goToLoginForCheckout() {
+    void navigate('/login', { state: { from: location } })
+  }
+
   async function handleCheckout() {
     if (items.length === 0) {
+      return
+    }
+    if (!canCheckout) {
+      goToLoginForCheckout()
       return
     }
 
@@ -99,26 +97,6 @@ export function CartPage() {
       }
     } finally {
       setIsCheckingOut(false)
-    }
-  }
-
-  async function handleDemoLogin(values: DemoLoginValues) {
-    setIsSigningIn(true)
-    setLoginError(null)
-    try {
-      const result = await login({
-        email: values.email.trim(),
-        password: values.password,
-      })
-      dispatch(setUser(result.user))
-    } catch (error: unknown) {
-      if (error instanceof ApiClientError) {
-        setLoginError(error.message)
-      } else {
-        setLoginError('Could not sign in.')
-      }
-    } finally {
-      setIsSigningIn(false)
     }
   }
 
@@ -202,48 +180,21 @@ export function CartPage() {
             </Text>
           </Col>
 
-          {!canCheckout ? (
-            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-              <Alert
-                className="cart-page__auth"
-                type="info"
-                showIcon
-                message="Sign in to checkout"
-                description="Checkout needs a session (token stays in memory). Demo password: password."
-              />
-              <Form
-                className="cart-page__auth"
-                layout="vertical"
-                requiredMark={false}
-                initialValues={{ email: 'shopper@bugbazaar.dev', password: 'password' }}
-                onFinish={(values: DemoLoginValues) => {
-                  void handleDemoLogin(values)
-                }}
-              >
-                <Form.Item
-                  label="Email"
-                  name="email"
-                  rules={[{ required: true, message: 'Email is required' }]}
-                >
-                  <Input type="email" autoComplete="username" aria-label="Email" />
-                </Form.Item>
-                <Form.Item
-                  label="Password"
-                  name="password"
-                  rules={[{ required: true, message: 'Password is required' }]}
-                >
-                  <Input.Password autoComplete="current-password" aria-label="Password" />
-                </Form.Item>
-                {loginError ? (
-                  <Alert type="error" showIcon message={loginError} className="cart-page__error" />
-                ) : null}
-                <Button type="primary" htmlType="submit" loading={isSigningIn}>
-                  Sign in
+          <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+            {!canCheckout ? (
+              <Space orientation="vertical" size="middle">
+                <Alert
+                  className="cart-page__auth"
+                  type="info"
+                  showIcon
+                  message="Sign in to checkout"
+                  description="Checkout is protected. You will return here after signing in."
+                />
+                <Button type="primary" onClick={goToLoginForCheckout}>
+                  Sign in to checkout
                 </Button>
-              </Form>
-            </Col>
-          ) : (
-            <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+              </Space>
+            ) : (
               <Space orientation="vertical" size="middle">
                 <Text type="secondary">Signed in as {user?.email}</Text>
                 {checkoutError ? (
@@ -257,6 +208,7 @@ export function CartPage() {
                       <Button
                         type="primary"
                         loading={isCheckingOut}
+                        disabled={isCheckingOut}
                         onClick={() => {
                           void handleCheckout()
                         }}
@@ -269,6 +221,7 @@ export function CartPage() {
                   <Button
                     type="primary"
                     loading={isCheckingOut}
+                    disabled={isCheckingOut}
                     onClick={() => {
                       void handleCheckout()
                     }}
@@ -277,8 +230,8 @@ export function CartPage() {
                   </Button>
                 )}
               </Space>
-            </Col>
-          )}
+            )}
+          </Col>
         </>
       )}
     </Row>

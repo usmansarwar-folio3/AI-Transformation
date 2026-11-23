@@ -3,10 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { ConfigProvider } from 'antd'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
-import { store } from './store'
+import { subscribeUnauthorized } from './auth/unauthorized'
+import { clearSession, store } from './store'
 import { themeConfig } from './theme/themeConfig'
 import App from './App.tsx'
 import './styles/global.scss'
+
+subscribeUnauthorized(() => {
+  store.dispatch(clearSession())
+})
 
 async function enableMockApi(): Promise<void> {
   if (!import.meta.env.DEV) {

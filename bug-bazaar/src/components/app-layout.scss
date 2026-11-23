@@ -28,6 +28,15 @@
   align-items: center;
 }
 
+.app-layout__nav {
+  justify-content: flex-end;
+}
+
+.app-layout__link {
+  padding-inline: 0;
+  color: $color-text;
+}
+
 .app-layout__cart-badge {
   display: inline-flex;
 }

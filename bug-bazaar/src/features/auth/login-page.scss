@@ -1,0 +1,22 @@
+@use '../../styles/variables' as *;
+
+.login-page__title {
+  margin: 0;
+  color: $color-text;
+}
+
+.login-page__hint {
+  color: $color-text-secondary;
+}
+
+.login-page__form {
+  width: 100%;
+}
+
+.login-page__error {
+  margin-bottom: 16px;
+}
+
+.login-page__submit {
+  margin-top: 8px;
+}

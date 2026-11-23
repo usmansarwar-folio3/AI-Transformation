@@ -109,3 +109,17 @@ Use MSW; no real backend.
 - Checkout reuses one idempotency key per attempt (cleared when cart lines change)
 - MSW 409 details include `productName`; UI formats a named out-of-stock message
 - Minimal cart-page sign-in stub so checkout can call the authenticated orders API before D3-3
+
+## D3-3 — Auth
+
+**Prompt:** Login/logout; protect account + checkout; return-to; memory token + docs/auth.md; 401 clears session; no double-submit.
+
+**Kept:**
+- Token helpers on the typed client; Redux session holds user only
+- Cart persistence separate from credentials
+
+**Changed and why:**
+- Added `/login`, `/account`, `RequireAuth`, and header Sign in / Account / Log out
+- Cart checkout redirects to login with return-to instead of an inline form
+- 401 on authenticated requests clears token + Redux session via an unauthorized subscriber
+- Wrote `docs/auth.md` for the memory vs localStorage trade-off

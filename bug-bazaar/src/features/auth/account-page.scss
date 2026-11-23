@@ -1,0 +1,22 @@
+@use '../../styles/variables' as *;
+
+.account-page__title {
+  margin: 0;
+  color: $color-text;
+}
+
+.account-page__label {
+  color: $color-text-secondary;
+}
+
+.account-page__value {
+  color: $color-text;
+}
+
+.account-page__hint {
+  color: $color-text-secondary;
+}
+
+.account-page__logout {
+  margin-top: 8px;
+}
