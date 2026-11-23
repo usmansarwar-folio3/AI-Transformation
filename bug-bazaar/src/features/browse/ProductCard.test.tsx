@@ -19,12 +19,25 @@ const sampleProduct: Product = {
 }
 
 const navigateMock = vi.fn()
+const messageSuccessMock = vi.hoisted(() => vi.fn())
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
     ...actual,
     useNavigate: () => navigateMock,
+  }
+})
+
+// Ant Design `message` schedules work that can run after jsdom teardown → "window is not defined".
+vi.mock('antd', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('antd')>()
+  return {
+    ...actual,
+    message: {
+      ...actual.message,
+      success: messageSuccessMock,
+    },
   }
 })
 
@@ -36,6 +49,7 @@ function LocationProbe() {
 afterEach(() => {
   cleanup()
   navigateMock.mockReset()
+  messageSuccessMock.mockReset()
 })
 
 describe('ProductCard', () => {
@@ -97,5 +111,6 @@ describe('ProductCard', () => {
 
     expect(selectCartItemCount(store.getState())).toBe(1)
     expect(navigateMock).not.toHaveBeenCalled()
+    expect(messageSuccessMock).toHaveBeenCalled()
   })
 })

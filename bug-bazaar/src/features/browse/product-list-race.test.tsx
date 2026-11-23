@@ -1,9 +1,11 @@
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import { ConfigProvider } from 'antd'
+import { Provider } from 'react-redux'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product, ProductList, ProductQuery } from '../../api'
 import { TestQueryProvider } from '../../query/testUtils'
+import { createAppStore } from '../../store'
 import { ProductListPage } from './ProductListPage'
 
 const getProducts = vi.hoisted(() => vi.fn())
@@ -75,11 +77,13 @@ describe('product list search races (D2-6)', () => {
     )
 
     render(
-      <TestQueryProvider>
-        <ConfigProvider>
-          <RouterProvider router={router} />
-        </ConfigProvider>
-      </TestQueryProvider>,
+      <Provider store={createAppStore()}>
+        <TestQueryProvider>
+          <ConfigProvider>
+            <RouterProvider router={router} />
+          </ConfigProvider>
+        </TestQueryProvider>
+      </Provider>,
     )
 
     return router
