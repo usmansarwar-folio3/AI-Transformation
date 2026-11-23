@@ -27,6 +27,16 @@
   border-inline-end: 1px solid $color-sider-divider;
 }
 
+.app-layout__nav-drawer .ant-drawer-body {
+  padding: 16px;
+  background: $color-sider;
+}
+
+.app-layout__nav-drawer .ant-drawer-header {
+  background: $color-sider;
+  border-block-end: 1px solid $color-sider-divider;
+}
+
 .app-layout__brand {
   display: flex;
   align-items: center;
@@ -79,6 +89,10 @@
   border-block-end: 1px solid $color-border;
 }
 
+.app-layout__toolbar-start {
+  flex-wrap: nowrap;
+}
+
 .app-layout__toolbar-end {
   display: flex;
   justify-content: flex-end;
@@ -87,6 +101,25 @@
 
 .app-layout__toolbar-label {
   color: $color-text-secondary;
+}
+
+.app-layout__header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  padding-inline: 0;
+  color: $color-text;
+}
+
+.app-layout__header-logo {
+  flex-shrink: 0;
+}
+
+.app-layout__header-brand-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: $color-text;
 }
 
 .app-layout__content {

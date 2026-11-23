@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import {
   ApiOutlined,
   DownOutlined,
@@ -36,50 +36,176 @@ const DEMO_TRIGGER_ITEMS: MenuProps['items'] = [
   { key: 'missing', label: 'Details 404 (/products/missing)' },
 ]
 
-export function AppLayout() {
+type AppNavProps = {
+  onNavigate?: () => void
+}
+
+function AppNav({ onNavigate }: AppNavProps) {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const screens = useBreakpoint()
-  const cartItemCount = useAppSelector(selectCartItemCount)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const hasToken = Boolean(getAuthToken())
   const signedIn = isLoggedIn && hasToken
-  const [leftCollapsed, setLeftCollapsed] = useState(false)
-  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
 
-  const isDesktop = Boolean(screens.lg)
-  const siderCollapsed = isDesktop ? false : leftCollapsed
+  function go(path: string) {
+    void navigate(path)
+    onNavigate?.()
+  }
 
   function handleLogout() {
     clearAuthToken()
     dispatch(clearSession())
     void navigate('/', { replace: true })
+    onNavigate?.()
   }
 
   const handleDemoTriggerClick: MenuProps['onClick'] = ({ key }) => {
     switch (key) {
       case 'empty':
-        void navigate('/?search=__none__')
+        go('/?search=__none__')
         break
       case 'error':
-        void navigate('/?forceError=500')
+        go('/?forceError=500')
         break
       case 'slow':
-        void navigate('/?slow=1')
+        go('/?slow=1')
         break
       case 'missing':
-        void navigate('/products/missing')
+        go('/products/missing')
         break
       default:
         break
     }
   }
 
+  return (
+    <>
+      <Button
+        type="link"
+        className="app-layout__brand"
+        aria-label="Bug Bazaar home"
+        onClick={() => {
+          go('/')
+        }}
+      >
+        <Image
+          className="app-layout__logo"
+          src="/logo.svg"
+          alt=""
+          preview={false}
+          width={36}
+          height={36}
+        />
+        <Text className="app-layout__brand-text">Bug Bazaar</Text>
+      </Button>
+
+      <Space className="app-layout__nav" orientation="vertical" size={8}>
+        <Button
+          type={location.pathname === '/' ? 'primary' : 'default'}
+          className="app-layout__nav-button"
+          icon={<ShopOutlined />}
+          block
+          onClick={() => {
+            go('/')
+          }}
+        >
+          Shop
+        </Button>
+        <Button
+          type={location.pathname.startsWith('/dev/api') ? 'primary' : 'default'}
+          className="app-layout__nav-button"
+          icon={<ApiOutlined />}
+          block
+          onClick={() => {
+            go('/dev/api')
+          }}
+        >
+          Mock API
+        </Button>
+        {signedIn ? (
+          <>
+            <Button
+              type={location.pathname.startsWith('/account') ? 'primary' : 'default'}
+              className="app-layout__nav-button"
+              icon={<UserOutlined />}
+              block
+              onClick={() => {
+                go('/account')
+              }}
+            >
+              Account
+            </Button>
+            <Button
+              className="app-layout__nav-button"
+              icon={<LogoutOutlined />}
+              block
+              onClick={handleLogout}
+            >
+              Log out
+            </Button>
+          </>
+        ) : (
+          <Button
+            type={location.pathname.startsWith('/login') ? 'primary' : 'default'}
+            className="app-layout__nav-button"
+            icon={<UserOutlined />}
+            block
+            onClick={() => {
+              go('/login')
+            }}
+          >
+            Sign in
+          </Button>
+        )}
+
+        <Dropdown
+          className="app-layout__demo-dropdown"
+          menu={{ items: DEMO_TRIGGER_ITEMS, onClick: handleDemoTriggerClick }}
+          trigger={['click']}
+        >
+          <Button className="app-layout__nav-button" icon={<ExperimentOutlined />} block>
+            Demo triggers <DownOutlined />
+          </Button>
+        </Dropdown>
+      </Space>
+    </>
+  )
+}
+
+export function AppLayout() {
+  const navigate = useNavigate()
+  const screens = useBreakpoint()
+  const cartItemCount = useAppSelector(selectCartItemCount)
+  const [navOpen, setNavOpen] = useState(false)
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
+
+  const isDesktop = Boolean(screens.lg)
+
   const cartAriaLabel =
     cartItemCount === 0
       ? 'Cart, empty'
       : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
+
+  function closeNav() {
+    setNavOpen(false)
+  }
+
+  let sideChrome: ReactNode = null
+  if (isDesktop) {
+    sideChrome = (
+      <Sider
+        className="app-layout__sider app-layout__sider--left"
+        theme="light"
+        width={280}
+        collapsedWidth={280}
+        collapsed={false}
+        trigger={null}
+      >
+        <AppNav />
+      </Sider>
+    )
+  }
 
   return (
     <Layout className="app-layout">
@@ -87,125 +213,42 @@ export function AppLayout() {
         Skip to main content
       </Button>
 
-      <Sider
-        className="app-layout__sider app-layout__sider--left"
-        theme="light"
-        width={280}
-        breakpoint="lg"
-        collapsedWidth={isDesktop ? 280 : 0}
-        collapsed={siderCollapsed}
-        onCollapse={(collapsed) => {
-          if (isDesktop) {
-            return
-          }
-          setLeftCollapsed(collapsed)
-        }}
-        trigger={null}
-      >
-        <Button
-          type="link"
-          className="app-layout__brand"
-          aria-label="Bug Bazaar home"
-          onClick={() => {
-            void navigate('/')
-          }}
-        >
-          <Image
-            className="app-layout__logo"
-            src="/logo.svg"
-            alt=""
-            preview={false}
-            width={36}
-            height={36}
-          />
-          <Text className="app-layout__brand-text">Bug Bazaar</Text>
-        </Button>
-
-        <Space className="app-layout__nav" orientation="vertical" size={8}>
-          <Button
-            type={location.pathname === '/' ? 'primary' : 'default'}
-            className="app-layout__nav-button"
-            icon={<ShopOutlined />}
-            block
-            onClick={() => {
-              void navigate('/')
-            }}
-          >
-            Shop
-          </Button>
-          <Button
-            type={location.pathname.startsWith('/dev/api') ? 'primary' : 'default'}
-            className="app-layout__nav-button"
-            icon={<ApiOutlined />}
-            block
-            onClick={() => {
-              void navigate('/dev/api')
-            }}
-          >
-            Mock API
-          </Button>
-          {signedIn ? (
-            <>
-              <Button
-                type={location.pathname.startsWith('/account') ? 'primary' : 'default'}
-                className="app-layout__nav-button"
-                icon={<UserOutlined />}
-                block
-                onClick={() => {
-                  void navigate('/account')
-                }}
-              >
-                Account
-              </Button>
-              <Button
-                className="app-layout__nav-button"
-                icon={<LogoutOutlined />}
-                block
-                onClick={handleLogout}
-              >
-                Log out
-              </Button>
-            </>
-          ) : (
-            <Button
-              type={location.pathname.startsWith('/login') ? 'primary' : 'default'}
-              className="app-layout__nav-button"
-              icon={<UserOutlined />}
-              block
-              onClick={() => {
-                void navigate('/login')
-              }}
-            >
-              Sign in
-            </Button>
-          )}
-
-          <Dropdown
-            className="app-layout__demo-dropdown"
-            menu={{ items: DEMO_TRIGGER_ITEMS, onClick: handleDemoTriggerClick }}
-            trigger={['click']}
-          >
-            <Button className="app-layout__nav-button" icon={<ExperimentOutlined />} block>
-              Demo triggers <DownOutlined />
-            </Button>
-          </Dropdown>
-        </Space>
-      </Sider>
+      {sideChrome}
 
       <Layout className="app-layout__main">
-        <Row className="app-layout__toolbar" gutter={[16, 16]} align="middle">
+        <Row className="app-layout__toolbar" gutter={[0, 0]} align="middle">
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
             {isDesktop ? (
               <Text className="app-layout__toolbar-label">The Bug Bazaar</Text>
             ) : (
-              <Button
-                className="app-layout__menu-toggle"
-                icon={leftCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-                aria-label={leftCollapsed ? 'Open navigation' : 'Close navigation'}
-                onClick={() => {
-                  setLeftCollapsed((value) => !value)
-                }}
-              />
+              <Space className="app-layout__toolbar-start" size="small" align="center">
+                <Button
+                  className="app-layout__menu-toggle"
+                  icon={navOpen ? <MenuFoldOutlined /> : <MenuUnfoldOutlined />}
+                  aria-label={navOpen ? 'Close navigation' : 'Open navigation'}
+                  onClick={() => {
+                    setNavOpen((value) => !value)
+                  }}
+                />
+                <Button
+                  type="link"
+                  className="app-layout__header-brand"
+                  aria-label="Bug Bazaar home"
+                  onClick={() => {
+                    void navigate('/')
+                  }}
+                >
+                  <Image
+                    className="app-layout__header-logo"
+                    src="/logo.svg"
+                    alt=""
+                    preview={false}
+                    width={28}
+                    height={28}
+                  />
+                  <Text className="app-layout__header-brand-text">Bug Bazaar</Text>
+                </Button>
+              </Space>
             )}
           </Col>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
@@ -231,6 +274,18 @@ export function AppLayout() {
 
         <Footer className="app-layout__footer">The Bug Bazaar</Footer>
       </Layout>
+
+      <Drawer
+        className="app-layout__nav-drawer"
+        title="Menu"
+        placement="left"
+        open={!isDesktop && navOpen}
+        onClose={closeNav}
+        size={280}
+        destroyOnHidden
+      >
+        <AppNav onNavigate={closeNav} />
+      </Drawer>
 
       <Drawer
         className="app-layout__cart-drawer"
