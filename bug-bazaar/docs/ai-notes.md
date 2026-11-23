@@ -82,3 +82,16 @@ Use MSW; no real backend.
 - Removed results remount-per-query so overlapping in-flight requests are real
 - MSW `slow=1` variable delay (documented mock control) for manual out-of-order demos; Vitest race test settles older promises after newer ones
 - Debounced search commits only when `debounced === draft`, so a stale `""` cannot wipe a newer URL search
+
+## D3-1 — Redux Toolkit
+
+**Prompt:** Add RTK store for cart and session; derived selectors for count/total; header badge from selector; Provider at root; no full cart UI yet.
+
+**Kept:**
+- Auth token in API client memory helpers (not Redux / not localStorage)
+- Product list fetching outside Redux (TanStack Query later)
+
+**Changed and why:**
+- Added `cart` + `session` slices, `createSelector` count/total, typed hooks, and `Provider` in `main.tsx`
+- Header `Badge` reads `selectCartItemCount` so the count is derived, not local state
+- Cart actions include stock-aware quantity clamps so D3-2 can reuse them without inventing endpoints

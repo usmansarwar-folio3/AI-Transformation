@@ -11,10 +11,28 @@
   background: $color-bg-container;
 }
 
+.app-layout__header-row {
+  width: 100%;
+}
+
 .app-layout__brand {
   padding-inline: 0;
   font-size: 1.25rem;
   font-weight: 600;
+  color: $color-text;
+}
+
+.app-layout__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.app-layout__cart-badge {
+  display: inline-flex;
+}
+
+.app-layout__cart {
   color: $color-text;
 }
 

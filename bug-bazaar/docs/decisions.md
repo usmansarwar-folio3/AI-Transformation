@@ -9,7 +9,7 @@ Record library and technique choices here: what you used, what else you consider
 | HTTP client | Native `fetch` wrapper in `src/api/client.ts` | Axios | Six endpoints; week scores status codes, abort, and error mapping. No extra dependency. MSW mocks `fetch` directly. |
 | Runtime validation | Zod | Manual type guards | Shared schemas for `Product` and `ApiError` at the API boundary. |
 | Server cache (planned) | TanStack Query | Hand-written `useEffect` cache | Covers D3-5 reuse and stock refresh, D2 UI states, abort, and latest-query-wins. |
-| Client state (planned) | Redux Toolkit | Context only | Tracker row D3-1; cart and session are client state. |
+| Client state | Redux Toolkit | Context only | Tracker row D3-1; cart and session are client state (confirmed in D3-1). |
 | Routing | React Router | Manual history / Next-style file routes | Needed for list + details now; URL filter sync comes in D2-2. |
 | UI library | Ant Design + SCSS (BEM) | Raw HTML/CSS | Mandatory project standard in `UI.md`. |
 
@@ -93,3 +93,12 @@ Record library and technique choices here: what you used, what else you consider
 | Overlapping requests | Keep one `ProductListResults` instance (no remount key) so debounce/URL updates re-run the effect | Remount-per-`filterKey` | Remount already aborted, but same-instance races better match live typing. |
 | Slowness simulation | MSW mock query `slow=1`: delay ≈ `max(50, 350 - search.length * 40)` | Fixed client `setTimeout`; always-on MSW delay | Opt-in so normal tests stay fast; shorter searches finish later → out-of-order without a custom backend. |
 | Debounce vs URL | Commit debounced search only when `debounced === draft` | Always commit debounced value | Prevents a lagging debounced `""` from clearing a newer URL search (Back/Forward or fast commits). |
+
+## D3-1 Redux Toolkit
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Client store | Redux Toolkit (`configureStore` + slices) | React Context + `useReducer`; Zustand | Matches the tracker/planned baseline; defined actions only; easy derived selectors. |
+| What lives in Redux | Cart lines + session `user` | Also caching product lists | Server lists stay out until TanStack Query (D3-5); token stays in API client memory, not the store/localStorage. |
+| Derived values | `createSelector` for item count and total cents | Ad-hoc sums in components | Header badge reads `selectCartItemCount`; totals stay in cents until display. |
+| Header badge | Ant Design `Badge` + `useAppSelector(selectCartItemCount)` | Local `useState` count | Done criterion: badge uses a derived store value. |
