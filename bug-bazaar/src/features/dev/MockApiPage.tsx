@@ -1,6 +1,7 @@
 import { Alert, Button, Col, Row, Space, Table, Tag, Typography } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { useNavigate } from 'react-router-dom'
+import { useLiveStock } from '../stock'
 import { mockEndpoints, type MockEndpoint } from './mockEndpoints'
 import './mock-api-page.scss'
 
@@ -13,6 +14,7 @@ const METHOD_COLOR: Record<MockEndpoint['method'], string> = {
 
 export function MockApiPage() {
   const navigate = useNavigate()
+  const liveStatus = useLiveStock(['p-0001'])
 
   const columns: ColumnsType<MockEndpoint> = [
     {
@@ -74,6 +76,23 @@ export function MockApiPage() {
           Expand a row for how to trigger each listed error. Buttons open the real shop screen when
           one exists. This page does not call fetch.
         </Paragraph>
+      </Col>
+
+      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+        <Alert
+          className="mock-api-page__stock"
+          type="success"
+          showIcon
+          title={
+            <Space wrap>
+              <Tag color="purple">WS</Tag>
+              <Text code>/stock</Text>
+              <Text>Live stock feed (not a REST endpoint)</Text>
+              <Tag color={liveStatus === 'open' ? 'success' : 'default'}>{liveStatus}</Tag>
+            </Space>
+          }
+          description="Dev WebSocket pushes stock ticks. The shop patches TanStack Query and the in-memory catalog, reconnects after a drop, and closes when the page unmounts."
+        />
       </Col>
 
       <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>

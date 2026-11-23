@@ -1,8 +1,9 @@
-import { Button, Col, Image, Row, Space, Typography, message } from 'antd'
+import { Button, Col, Image, Row, Space, Tag, Typography, message } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import { failure } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
 import { useBackToTop } from '../../hooks'
+import { useLiveStock } from '../stock'
 import { requestStatusFromQuery, useProductQuery } from '../../query'
 import { addItem, useAppDispatch } from '../../store'
 import { formatPriceFromCents } from '../../utils/formatPrice'
@@ -20,6 +21,7 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
   const productQuery = useProductQuery(productId)
   const status = requestStatusFromQuery(productQuery)
   const { isVisible: showBackToTop, scrollToTop } = useBackToTop()
+  const liveStatus = useLiveStock([productId])
 
   return (
     <Row className="product-details-page" gutter={[24, 24]}>
@@ -69,6 +71,9 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
                 >
                   {product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`}
                 </Text>
+                <Tag color={liveStatus === 'open' ? 'success' : 'default'}>
+                  Live stock: {liveStatus}
+                </Tag>
                 <Text className="product-details-page__category" type="secondary">
                   Category: {product.category}
                 </Text>

@@ -10,7 +10,12 @@
 }
 
 .product-list-page__count {
+  margin-inline-end: 12px;
   color: $color-text-secondary;
+}
+
+.product-list-page__live {
+  vertical-align: middle;
 }
 
 .product-list-page__pagination {

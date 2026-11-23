@@ -1,7 +1,9 @@
-import { Col, Pagination, Row, Typography } from 'antd'
+import { useMemo } from 'react'
+import { Col, Pagination, Row, Tag, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
 import type { ProductList, ProductQuery, RequestStatus } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
+import { useLiveStock } from '../stock'
 import { requestStatusFromQuery, useProductsQuery } from '../../query'
 import { ProductCard } from './ProductCard'
 import {
@@ -92,6 +94,11 @@ function ProductListBody({ filters, forceError, slow, onPageChange }: ProductLis
   const productsQuery = useProductsQuery(query)
   const status = requestStatusFromQuery(productsQuery)
   const total = productsQuery.data?.total ?? null
+  const liveIds = useMemo(
+    () => productsQuery.data?.items.map((product) => product.id) ?? [],
+    [productsQuery.data?.items],
+  )
+  const liveStatus = useLiveStock(liveIds)
 
   return (
     <>
@@ -101,6 +108,12 @@ function ProductListBody({ filters, forceError, slow, onPageChange }: ProductLis
             ? 'Loading results…'
             : formatProductResultRange(filters.page, PRODUCTS_PAGE_SIZE, total)}
         </Text>
+        <Tag
+          className="product-list-page__live"
+          color={liveStatus === 'open' ? 'success' : liveStatus === 'reconnecting' ? 'warning' : 'default'}
+        >
+          Live stock: {liveStatus}
+        </Tag>
       </Col>
 
       <ProductListResults

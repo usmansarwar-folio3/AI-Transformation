@@ -257,3 +257,20 @@ export const productCatalog = createProductCatalog()
 
 /** Stable out-of-stock product used for intentional 409s. */
 export const outOfStockProduct = productCatalog[1]!
+
+/**
+ * Apply a live stock tick to the in-memory catalog so a later refetch
+ * matches the patched TanStack Query cache. Keeps `p-0002` at zero for 409s.
+ */
+export function applyStockUpdate(productId: string, stock: number): void {
+  if (productId === outOfStockProduct.id) {
+    return
+  }
+
+  const product = productCatalog.find((entry) => entry.id === productId)
+  if (!product) {
+    return
+  }
+
+  product.stock = Math.max(0, Math.floor(stock))
+}

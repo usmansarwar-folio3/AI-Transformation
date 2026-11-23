@@ -150,3 +150,13 @@ Product list/detail (and `/me`) may show cached data for up to **30 seconds** wi
 | --- | --- | --- | --- |
 | List re-renders | `React.memo` on `ProductCard` | Virtualize 5,000 rows; Context to isolate cart badge | Cart badge lives in `AppLayout`; memo stops 20 unchanged cards from re-rendering. |
 | Catalog window | Keep page size 20 | `react-window` over full catalog | API is paged; virtualizing 5k fights the contract and Ant Design grid. Documented in `docs/performance.md`. |
+
+## D4-4 Live stock
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Transport | Dev WebSocket at `/stock` (Vite plugin + `ws`) | Polling every N seconds; SSE | Bidirectional-ready, low latency for many clients; teaches when WebSockets fit. |
+| Cache update | Patch TanStack Query lists/details + mutate `productCatalog` | Invalidate on every tick | Instant UI without a refetch storm; catalog stays aligned for the next HTTP read. |
+| Lifecycle | `useLiveStock` reconnect with backoff; close on unmount | Leave socket open in a global singleton | Meets “recovers after disconnect” and “stops when the page closes”. |
+
+When polling would be better: rare stock checks, no server push support, or many short-lived tabs where a socket per tab is costly. When SSE would be better: one-way server→client only and you want automatic reconnect over HTTP without a WS upgrade path.
