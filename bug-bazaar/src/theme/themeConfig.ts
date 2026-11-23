@@ -1,14 +1,16 @@
 import type { ThemeConfig } from 'antd'
 import { themeToken } from './themeToken'
 
+const siderBg = '#ebe0d2'
+
 export const themeConfig: ThemeConfig = {
   token: themeToken,
   components: {
     Layout: {
-      siderBg: '#1c1917',
+      siderBg,
       bodyBg: themeToken.colorBgLayout,
-      headerBg: '#1c1917',
-      triggerBg: '#1c1917',
+      headerBg: siderBg,
+      triggerBg: siderBg,
     },
     Card: {
       borderRadiusLG: themeToken.borderRadius,

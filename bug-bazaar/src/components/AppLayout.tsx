@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import {
   ApiOutlined,
+  DownOutlined,
+  ExperimentOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -8,10 +10,11 @@ import {
   ShopOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Badge, Button, Col, Drawer, Grid, Image, Layout, Row, Space, Typography } from 'antd'
+import { Badge, Button, Col, Drawer, Dropdown, Image, Layout, Row, Space, Typography } from 'antd'
+import type { MenuProps } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getAuthToken, logout as clearAuthToken } from '../api'
-import { SidebarFilters } from '../features/browse/SidebarFilters'
+import { StickyProductFilters } from '../features/browse/StickyProductFilters'
 import { MiniCart } from '../features/cart/MiniCart'
 import {
   clearSession,
@@ -25,13 +28,18 @@ import './app-layout.scss'
 
 const { Sider, Content, Footer } = Layout
 const { Text } = Typography
-const { useBreakpoint } = Grid
+
+const DEMO_TRIGGER_ITEMS: MenuProps['items'] = [
+  { key: 'empty', label: 'Empty list (search=__none__)' },
+  { key: 'error', label: 'List error (forceError=500)' },
+  { key: 'slow', label: 'Out-of-order list (slow=1)' },
+  { key: 'missing', label: 'Details 404 (/products/missing)' },
+]
 
 export function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const screens = useBreakpoint()
   const cartItemCount = useAppSelector(selectCartItemCount)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const hasToken = Boolean(getAuthToken())
@@ -39,21 +47,35 @@ export function AppLayout() {
   const [leftCollapsed, setLeftCollapsed] = useState(false)
   const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
 
-  const showRightSider = Boolean(screens.lg)
-  const cartDrawerVisible = showRightSider ? false : cartDrawerOpen
-
   function handleLogout() {
     clearAuthToken()
     dispatch(clearSession())
     void navigate('/', { replace: true })
   }
 
-  function openCart() {
-    if (showRightSider) {
-      return
+  const handleDemoTriggerClick: MenuProps['onClick'] = ({ key }) => {
+    switch (key) {
+      case 'empty':
+        void navigate('/?search=__none__')
+        break
+      case 'error':
+        void navigate('/?forceError=500')
+        break
+      case 'slow':
+        void navigate('/?slow=1')
+        break
+      case 'missing':
+        void navigate('/products/missing')
+        break
+      default:
+        break
     }
-    setCartDrawerOpen(true)
   }
+
+  const cartAriaLabel =
+    cartItemCount === 0
+      ? 'Cart, empty'
+      : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
 
   return (
     <Layout className="app-layout">
@@ -63,7 +85,7 @@ export function AppLayout() {
 
       <Sider
         className="app-layout__sider app-layout__sider--left"
-        theme="dark"
+        theme="light"
         width={280}
         breakpoint="lg"
         collapsedWidth={0}
@@ -150,50 +172,37 @@ export function AppLayout() {
               Sign in
             </Button>
           )}
-          <Badge count={cartItemCount} overflowCount={99} className="app-layout__cart-badge">
-            <Button
-              className="app-layout__nav-button"
-              icon={<ShoppingCartOutlined />}
-              block
-              aria-label={
-                cartItemCount === 0
-                  ? 'Cart, empty'
-                  : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
-              }
-              onClick={openCart}
-            >
-              Cart
-            </Button>
-          </Badge>
-        </Space>
 
-        <SidebarFilters />
+          <Dropdown
+            className="app-layout__demo-dropdown"
+            menu={{ items: DEMO_TRIGGER_ITEMS, onClick: handleDemoTriggerClick }}
+            trigger={['click']}
+          >
+            <Button className="app-layout__nav-button" icon={<ExperimentOutlined />} block>
+              Demo triggers <DownOutlined />
+            </Button>
+          </Dropdown>
+        </Space>
       </Sider>
 
       <Layout className="app-layout__main">
-        <Row className="app-layout__toolbar" gutter={[16, 16]} align="middle">
-          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
-            <Button
-              className="app-layout__menu-toggle"
-              icon={leftCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              aria-label={leftCollapsed ? 'Open navigation' : 'Close navigation'}
-              onClick={() => {
-                setLeftCollapsed((value) => !value)
-              }}
-            />
-          </Col>
-          <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
-            {showRightSider ? (
-              <Text className="app-layout__toolbar-label">The Bug Bazaar</Text>
-            ) : (
-              <Badge count={cartItemCount} overflowCount={99}>
+        <Space className="app-layout__sticky-chrome" orientation="vertical" size={0}>
+          <Row className="app-layout__toolbar" gutter={[16, 16]} align="middle">
+            <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
+              <Button
+                className="app-layout__menu-toggle"
+                icon={leftCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                aria-label={leftCollapsed ? 'Open navigation' : 'Close navigation'}
+                onClick={() => {
+                  setLeftCollapsed((value) => !value)
+                }}
+              />
+            </Col>
+            <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
+              <Badge count={cartItemCount} overflowCount={99} className="app-layout__cart-badge">
                 <Button
                   icon={<ShoppingCartOutlined />}
-                  aria-label={
-                    cartItemCount === 0
-                      ? 'Cart, empty'
-                      : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
-                  }
+                  aria-label={cartAriaLabel}
                   onClick={() => {
                     setCartDrawerOpen(true)
                   }}
@@ -201,9 +210,11 @@ export function AppLayout() {
                   Cart
                 </Button>
               </Badge>
-            )}
-          </Col>
-        </Row>
+            </Col>
+          </Row>
+
+          <StickyProductFilters />
+        </Space>
 
         <Content className="app-layout__content" id="main-content" role="main" tabIndex={-1}>
           <AppErrorBoundary>
@@ -214,22 +225,11 @@ export function AppLayout() {
         <Footer className="app-layout__footer">The Bug Bazaar</Footer>
       </Layout>
 
-      {showRightSider ? (
-        <Sider
-          className="app-layout__sider app-layout__sider--right"
-          theme="light"
-          width={320}
-          collapsible={false}
-        >
-          <MiniCart />
-        </Sider>
-      ) : null}
-
       <Drawer
         className="app-layout__cart-drawer"
         title="Cart"
         placement="right"
-        open={cartDrawerVisible}
+        open={cartDrawerOpen}
         onClose={() => {
           setCartDrawerOpen(false)
         }}

@@ -23,13 +23,8 @@
 .app-layout__sider--left {
   overflow: auto;
   padding: 16px;
-}
-
-.app-layout__sider--right {
-  overflow: auto;
-  padding: 16px;
-  background: $color-bg-container;
-  border-inline-start: 1px solid $color-border;
+  background: $color-sider;
+  border-inline-end: 1px solid $color-sider-divider;
 }
 
 .app-layout__brand {
@@ -62,9 +57,12 @@
   text-align: start;
 }
 
-.app-layout__cart-badge {
-  display: block;
+.app-layout__demo-dropdown {
   width: 100%;
+}
+
+.app-layout__cart-badge {
+  display: inline-flex;
 }
 
 .app-layout__main {
@@ -72,7 +70,17 @@
   background: $color-bg-layout;
 }
 
+.app-layout__sticky-chrome {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 30;
+  width: 100%;
+  background: $color-bg-container;
+  border-block-end: 1px solid $color-border;
+}
+
 .app-layout__toolbar {
+  width: 100%;
   padding: 12px 24px;
   background: $color-bg-container;
   border-block-end: 1px solid $color-border;
@@ -82,10 +90,6 @@
   display: flex;
   justify-content: flex-end;
   align-items: center;
-}
-
-.app-layout__toolbar-label {
-  color: $color-text-secondary;
 }
 
 .app-layout__content {

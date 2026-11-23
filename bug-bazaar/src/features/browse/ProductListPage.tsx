@@ -159,12 +159,8 @@ export function ProductListPage() {
           Products
         </Title>
         <Paragraph className="product-list-page__hint">
-          Browse developer gear. Filters live in the left sidebar and sync to the URL.
-        </Paragraph>
-        <Paragraph className="product-list-page__hint">
-          Trigger states: <Text code>search=__none__</Text> (empty),{' '}
-          <Text code>forceError=500</Text> (list error), <Text code>slow=1</Text> (out-of-order
-          list), <Text code>/products/missing</Text> (details error).
+          Browse developer gear. Search and filters stay sticky at the top and sync to the URL.
+          Demo error states live under Demo triggers in the left sidebar.
         </Paragraph>
       </Col>
 

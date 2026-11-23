@@ -1,12 +1,39 @@
 @use '../../styles/variables' as *;
 
+.login-page {
+  min-height: 60vh;
+}
+
+.login-page__card {
+  background: $color-bg-container;
+  border-radius: $border-radius;
+  border-color: $color-border;
+}
+
+.login-page__brand {
+  width: 100%;
+  margin-block-end: 8px;
+  text-align: center;
+}
+
+.login-page__logo {
+  border-radius: $border-radius;
+}
+
+.login-page__brand-name {
+  font-size: 1.1rem;
+  color: $color-primary;
+}
+
 .login-page__title {
   margin: 0;
   color: $color-text;
 }
 
 .login-page__hint {
+  margin-block-end: 0;
   color: $color-text-secondary;
+  text-align: center;
 }
 
 .login-page__form {

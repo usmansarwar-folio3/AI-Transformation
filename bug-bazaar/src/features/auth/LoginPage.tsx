@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Alert, Button, Col, Form, Input, Row, Typography } from 'antd'
+import { Alert, Button, Card, Col, Form, Image, Input, Row, Space, Typography } from 'antd'
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { getAuthToken, login, mapApiErrorToUi, toRequestError } from '../../api'
 import { resolveReturnTo } from '../../auth/returnTo'
@@ -63,64 +63,85 @@ export function LoginPage() {
   }
 
   return (
-    <Row className="login-page" gutter={[16, 16]} justify="center">
+    <Row className="login-page" gutter={[16, 16]} justify="center" align="middle">
       <Col xs={24} sm={20} md={14} lg={10} xl={8} xxl={6}>
-        <Title level={2} className="login-page__title">
-          Sign in
-        </Title>
-        <Paragraph className="login-page__hint">
-          Demo password: <Text code>password</Text> (any non-empty email). The session token stays in
-          memory only.
-        </Paragraph>
-
-        <Form
-          form={form}
-          className="login-page__form"
-          layout="vertical"
-          requiredMark={false}
-          disabled={isSubmitting}
-          initialValues={{ email: 'shopper@bugbazaar.dev', password: '' }}
-          onFinish={(values: LoginFormValues) => {
-            void handleFinish(values)
-          }}
-        >
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ required: true, message: 'Email is required' }]}
-          >
-            <Input type="email" autoComplete="username" aria-label="Email" />
-          </Form.Item>
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: 'Password is required' }]}
-          >
-            <Input.Password autoComplete="current-password" aria-label="Password" />
-          </Form.Item>
-
-          {formAlert ? (
-            <Alert
-              className="login-page__error"
-              type="error"
-              showIcon
-              role="alert"
-              title={formAlert.title}
-              description={formAlert.description}
+        <Card className="login-page__card">
+          <Space className="login-page__brand" orientation="vertical" size="middle" align="center">
+            <Image
+              className="login-page__logo"
+              src="/logo.svg"
+              alt=""
+              preview={false}
+              width={56}
+              height={56}
             />
-          ) : null}
+            <Text className="login-page__brand-name" strong>
+              Bug Bazaar
+            </Text>
+            <Title level={2} className="login-page__title">
+              Sign in
+            </Title>
+            <Paragraph className="login-page__hint">
+              Sign in to checkout and view your account. Demo password:{' '}
+              <Text code>password</Text> (any non-empty email). The session token stays in memory
+              only.
+            </Paragraph>
+          </Space>
 
-          <Button
-            type="primary"
-            htmlType="submit"
-            className="login-page__submit"
-            loading={isSubmitting}
+          <Form
+            form={form}
+            className="login-page__form"
+            layout="vertical"
+            requiredMark={false}
             disabled={isSubmitting}
-            block
+            initialValues={{ email: 'shopper@bugbazaar.dev', password: '' }}
+            onFinish={(values: LoginFormValues) => {
+              void handleFinish(values)
+            }}
           >
-            Sign in
-          </Button>
-        </Form>
+            <Form.Item
+              label="Email"
+              name="email"
+              rules={[{ required: true, message: 'Email is required' }]}
+            >
+              <Input type="email" autoComplete="username" aria-label="Email" size="large" />
+            </Form.Item>
+            <Form.Item
+              label="Password"
+              name="password"
+              rules={[{ required: true, message: 'Password is required' }]}
+            >
+              <Input.Password
+                autoComplete="current-password"
+                aria-label="Password"
+                size="large"
+              />
+            </Form.Item>
+
+            {formAlert ? (
+              <Alert
+                className="login-page__error"
+                type="error"
+                showIcon
+                role="alert"
+                title={formAlert.title}
+                description={formAlert.description}
+              />
+            ) : null}
+
+            <Button
+              type="primary"
+              htmlType="submit"
+              className="login-page__submit"
+              loading={isSubmitting}
+              disabled={isSubmitting}
+              size="large"
+              block
+            >
+              Sign in
+            </Button>
+          </Form>
+        </Card>
       </Col>
     </Row>
   )

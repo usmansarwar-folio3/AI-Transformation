@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Typography } from 'antd'
+import { Col, Row } from 'antd'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { ProductFilters } from './ProductFilters'
 import {
@@ -9,15 +9,13 @@ import {
   productFiltersToSearchParams,
   type ProductListFilters,
 } from './productFilters'
-import './sidebar-filters.scss'
-
-const { Title } = Typography
+import './sticky-product-filters.scss'
 
 /**
- * Sidebar filter chrome. URL search params remain the source of truth.
+ * Sticky top filter bar. URL search params remain the source of truth.
  * Changing filters from any route navigates to `/` with those params.
  */
-export function SidebarFilters() {
+export function StickyProductFilters() {
   const navigate = useNavigate()
   const location = useLocation()
   const [searchParams] = useSearchParams()
@@ -48,32 +46,31 @@ export function SidebarFilters() {
   }
 
   return (
-    <aside className="sidebar-filters">
-      <Title level={5} className="sidebar-filters__title">
-        Filters
-      </Title>
-      <ProductFilters
-        layout="vertical"
-        hideCount
-        filters={filters}
-        total={null}
-        canClear={hasActiveProductFilters(filters)}
-        onSearchCommit={(search) => {
-          patchFilters({ search })
-        }}
-        onCategoryChange={(category) => {
-          patchFilters({ category })
-        }}
-        onSortChange={(sort) => {
-          patchFilters({ sort })
-        }}
-        onInStockChange={(inStock) => {
-          patchFilters({ inStock })
-        }}
-        onClear={() => {
-          applyFilters(clearProductFilters())
-        }}
-      />
-    </aside>
+    <Row className="sticky-product-filters" gutter={[0, 0]} aria-label="Product filters">
+      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+        <ProductFilters
+          layout="horizontal"
+          hideCount
+          filters={filters}
+          total={null}
+          canClear={hasActiveProductFilters(filters)}
+          onSearchCommit={(search) => {
+            patchFilters({ search })
+          }}
+          onCategoryChange={(category) => {
+            patchFilters({ category })
+          }}
+          onSortChange={(sort) => {
+            patchFilters({ sort })
+          }}
+          onInStockChange={(inStock) => {
+            patchFilters({ inStock })
+          }}
+          onClear={() => {
+            applyFilters(clearProductFilters())
+          }}
+        />
+      </Col>
+    </Row>
   )
 }
