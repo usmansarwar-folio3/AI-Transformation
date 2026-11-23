@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Coffee bag">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <rect x="145" y="70" width="110" height="160" rx="8" fill="#5c4033"/>
+  <rect x="155" y="90" width="90" height="50" rx="4" fill="#f6f1ea"/>
+  <circle cx="200" cy="175" r="28" fill="#c45c26"/>
+  <rect x="160" y="70" width="80" height="12" rx="2" fill="#1c1917"/>
+</svg>

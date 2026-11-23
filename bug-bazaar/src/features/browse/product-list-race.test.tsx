@@ -22,10 +22,10 @@ function makeProduct(id: string, name: string): Product {
     id,
     name,
     price: 1000,
-    category: 'keyboard',
+    category: 'keyboards',
     stock: 3,
     rating: 4,
-    imageUrl: 'https://placehold.co/400x300/png?text=test',
+    imageUrl: '/products/keyboard-1.svg',
   }
 }
 

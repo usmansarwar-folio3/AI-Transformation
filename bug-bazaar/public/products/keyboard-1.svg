@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Mechanical keyboard">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <rect x="60" y="95" width="280" height="120" rx="12" fill="#1c1917"/>
+  <rect x="78" y="112" width="28" height="22" rx="4" fill="#c45c26"/>
+  <rect x="116" y="112" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="154" y="112" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="192" y="112" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="230" y="112" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="268" y="112" width="48" height="22" rx="4" fill="#1f6f8b"/>
+  <rect x="78" y="146" width="38" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="126" y="146" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="164" y="146" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="202" y="146" width="28" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="240" y="146" width="76" height="22" rx="4" fill="#e8e0d5"/>
+  <rect x="78" y="180" width="220" height="22" rx="4" fill="#e8e0d5"/>
+</svg>

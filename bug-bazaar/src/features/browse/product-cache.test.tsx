@@ -33,7 +33,7 @@ function makeProduct(id: string, name: string, stock = 5): Product {
     category: 'keyboards',
     stock,
     rating: 4,
-    imageUrl: 'https://placehold.co/400x300/png?text=test',
+    imageUrl: '/products/keyboard-1.svg',
   }
 }
 

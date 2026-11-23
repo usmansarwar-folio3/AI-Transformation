@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Sticker sheet">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <rect x="90" y="60" width="220" height="180" rx="16" fill="#ffffff" stroke="#d9cfc0" stroke-width="3"/>
+  <circle cx="150" cy="120" r="28" fill="#c45c26"/>
+  <rect x="210" y="95" width="60" height="50" rx="10" fill="#1f6f8b"/>
+  <polygon points="150,170 180,220 120,220" fill="#52c41a"/>
+  <rect x="210" y="170" width="60" height="40" rx="8" fill="#faad14"/>
+</svg>

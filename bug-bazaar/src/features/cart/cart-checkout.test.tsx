@@ -6,9 +6,12 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { createOrder, login } from '../../api'
 import { mockMeta } from '../../mocks/handlers'
+import { outOfStockProduct, productCatalog } from '../../mocks/seed'
 import { TestQueryProvider } from '../../query/testUtils'
 import { addItem, createAppStore, setUser } from '../../store'
 import { CartPage } from './CartPage'
+
+const firstProduct = productCatalog[0]!
 
 function renderCart(store = createAppStore()) {
   const router = createMemoryRouter(
@@ -37,8 +40,8 @@ describe('cart checkout (D3-2)', () => {
       cart: {
         items: [
           {
-            productId: 'p-0001',
-            name: 'Keyboards #1',
+            productId: firstProduct.id,
+            name: firstProduct.name,
             price: 500,
             quantity: 1,
             stock: 2,
@@ -49,7 +52,7 @@ describe('cart checkout (D3-2)', () => {
 
     renderCart(store)
 
-    const qty = screen.getByLabelText('Quantity for Keyboards #1')
+    const qty = screen.getByLabelText(`Quantity for ${firstProduct.name}`)
     await user.clear(qty)
     await user.type(qty, '9')
     await user.tab()
@@ -65,8 +68,8 @@ describe('cart checkout (D3-2)', () => {
       cart: {
         items: [
           {
-            productId: mockMeta.outOfStockProductId,
-            name: 'Ducks #2',
+            productId: outOfStockProduct.id,
+            name: outOfStockProduct.name,
             price: 200,
             quantity: 1,
             stock: 1,
@@ -85,7 +88,9 @@ describe('cart checkout (D3-2)', () => {
 
     await user.click(screen.getByRole('button', { name: 'Checkout' }))
 
-    expect(await screen.findByText(/Ducks #2 is out of stock/i)).toBeInTheDocument()
+    expect(
+      await screen.findByText(new RegExp(`${outOfStockProduct.name} is out of stock`, 'i')),
+    ).toBeInTheDocument()
   })
 
   it('does not create a duplicate order when the same idempotency key is retried', async () => {
@@ -108,8 +113,8 @@ describe('cart checkout (D3-2)', () => {
     const store = createAppStore({ cart: { items: [] } })
     store.dispatch(
       addItem({
-        productId: 'p-0001',
-        name: 'Keyboards #1',
+        productId: firstProduct.id,
+        name: firstProduct.name,
         price: 500,
         stock: 2,
         quantity: 5,

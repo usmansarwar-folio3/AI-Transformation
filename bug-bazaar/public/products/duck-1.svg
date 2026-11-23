@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300" role="img" aria-label="Rubber duck">
+  <rect width="400" height="300" fill="#f6f1ea"/>
+  <ellipse cx="200" cy="190" rx="90" ry="55" fill="#f5c542"/>
+  <circle cx="200" cy="120" r="48" fill="#f5c542"/>
+  <ellipse cx="248" cy="128" rx="22" ry="12" fill="#e67e22"/>
+  <circle cx="185" cy="112" r="6" fill="#1c1917"/>
+  <ellipse cx="140" cy="175" rx="18" ry="28" fill="#f0b429"/>
+  <ellipse cx="260" cy="175" rx="18" ry="28" fill="#f0b429"/>
+</svg>
