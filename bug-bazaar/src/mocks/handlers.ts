@@ -204,6 +204,7 @@ export const handlers = [
       if (item.quantity > product.stock) {
         return apiError(409, 'OUT_OF_STOCK', 'One or more items are out of stock', {
           productId: product.id,
+          productName: product.name,
           available: String(product.stock),
         })
       }

@@ -95,3 +95,17 @@ Use MSW; no real backend.
 - Added `cart` + `session` slices, `createSelector` count/total, typed hooks, and `Provider` in `main.tsx`
 - Header `Badge` reads `selectCartItemCount` so the count is derived, not local state
 - Cart actions include stock-aware quantity clamps so D3-2 can reuse them without inventing endpoints
+
+## D3-2 — Cart
+
+**Prompt:** Add/remove/qty cart UI; stock caps; persist cart; checkout via createOrder with idempotency; 409 names item; order confirmation.
+
+**Kept:**
+- Redux cart actions/selectors from D3-1
+- Typed `createOrder` / `login` through `client.ts`
+
+**Changed and why:**
+- Persisted cart only to `localStorage`; session/token still memory-only
+- Checkout reuses one idempotency key per attempt (cleared when cart lines change)
+- MSW 409 details include `productName`; UI formats a named out-of-stock message
+- Minimal cart-page sign-in stub so checkout can call the authenticated orders API before D3-3

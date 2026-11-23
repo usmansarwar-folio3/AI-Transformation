@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Col, Image, Row, Space, Typography } from 'antd'
+import { Button, Col, Image, Row, Space, Typography, message } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   ApiClientError,
@@ -12,6 +12,7 @@ import {
 } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
 import { useBackToTop } from '../../hooks'
+import { addItem, useAppDispatch } from '../../store'
 import { formatPriceFromCents } from '../../utils/formatPrice'
 import './product-details-page.scss'
 
@@ -23,6 +24,7 @@ type ProductDetailsContentProps = {
 
 function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
   const navigate = useNavigate()
+  const dispatch = useAppDispatch()
   const [status, setStatus] = useState<RequestStatus<Product>>(loading())
   const [retryCount, setRetryCount] = useState(0)
   const { isVisible: showBackToTop, scrollToTop } = useBackToTop()
@@ -115,6 +117,25 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
                 <Text className="product-details-page__category" type="secondary">
                   Category: {product.category}
                 </Text>
+                <Button
+                  type="primary"
+                  className="product-details-page__add-to-cart"
+                  disabled={product.stock === 0}
+                  onClick={() => {
+                    dispatch(
+                      addItem({
+                        productId: product.id,
+                        name: product.name,
+                        price: product.price,
+                        stock: product.stock,
+                        quantity: 1,
+                      }),
+                    )
+                    void message.success(`${product.name} added to cart`)
+                  }}
+                >
+                  {product.stock === 0 ? 'Out of stock' : 'Add to cart'}
+                </Button>
               </Space>
             </Col>
           </>

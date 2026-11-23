@@ -25,6 +25,8 @@ export {
   type ApiError,
   type CreateOrderInput,
   type LoginInput,
+  type OrderCreated,
+  type OrderStatus,
   type Product,
   type ProductCategory,
   type ProductList,

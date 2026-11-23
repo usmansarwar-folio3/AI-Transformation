@@ -34,8 +34,7 @@ export function AppLayout() {
                     : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
                 }
                 onClick={() => {
-                  // Cart route lands in D3-2; badge wiring is the D3-1 deliverable.
-                  void navigate('/')
+                  void navigate('/cart')
                 }}
               >
                 Cart

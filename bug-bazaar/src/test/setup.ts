@@ -1,8 +1,9 @@
 import '@testing-library/jest-dom/vitest'
 import { afterAll, afterEach, beforeAll, vi } from 'vitest'
+import { logout } from '../api/client'
 import { resetMockOrders } from '../mocks/handlers'
 import { server } from '../mocks/node'
-import { logout } from '../api/client'
+import { clearPersistedCart } from '../store/cartPersistence'
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -26,6 +27,7 @@ afterEach(() => {
   server.resetHandlers()
   resetMockOrders()
   logout()
+  clearPersistedCart()
 })
 
 afterAll(() => {

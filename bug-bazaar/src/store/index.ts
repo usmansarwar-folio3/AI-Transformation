@@ -7,6 +7,12 @@ export {
   type CartItem,
   type CartState,
 } from './cartSlice'
+export {
+  CART_STORAGE_KEY,
+  clearPersistedCart,
+  loadCartState,
+  saveCartState,
+} from './cartPersistence'
 export { useAppDispatch, useAppSelector } from './hooks'
 export {
   selectCartItemCount,

@@ -102,3 +102,12 @@ Record library and technique choices here: what you used, what else you consider
 | What lives in Redux | Cart lines + session `user` | Also caching product lists | Server lists stay out until TanStack Query (D3-5); token stays in API client memory, not the store/localStorage. |
 | Derived values | `createSelector` for item count and total cents | Ad-hoc sums in components | Header badge reads `selectCartItemCount`; totals stay in cents until display. |
 | Header badge | Ant Design `Badge` + `useAppSelector(selectCartItemCount)` | Local `useState` count | Done criterion: badge uses a derived store value. |
+
+## D3-2 Cart
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Cart persistence | `localStorage` key `bug-bazaar.cart` (cart slice only) via hydrate + `store.subscribe` | `redux-persist`; sessionStorage | Cart is not a credential and must survive reload; token/session stay out of storage. |
+| Idempotency | One `crypto.randomUUID()` per checkout attempt, kept in a ref and reused on Retry | New key on every click | MSW/API return the same order for the same key; retries cannot create a second order. New key when the cart changes. |
+| 409 copy | Format from API `details.productName` / `productId` (+ cart name fallback) | Raw `error.message` only | Done criterion: the out-of-stock item is named. |
+| Checkout auth | Minimal sign-in form on the cart page (`login` + `setUser`) | Full D3-3 login/account routes | Orders require a Bearer token; full auth UX deferred to D3-3. |

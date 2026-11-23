@@ -1,0 +1,14 @@
+@use '../../styles/variables' as *;
+
+.order-confirmation-page__title {
+  margin: 0;
+  color: $color-text;
+}
+
+.order-confirmation-page__meta {
+  color: $color-text-secondary;
+}
+
+.order-confirmation-page__status {
+  color: $color-success;
+}

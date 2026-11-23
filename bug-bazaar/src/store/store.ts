@@ -1,14 +1,30 @@
 import { configureStore } from '@reduxjs/toolkit'
-import { cartReducer } from './cartSlice'
-import { sessionReducer } from './sessionSlice'
+import { cartReducer, type CartState } from './cartSlice'
+import { loadCartState, saveCartState } from './cartPersistence'
+import { sessionReducer, type SessionState } from './sessionSlice'
 
-export function createAppStore() {
-  return configureStore({
+export type PreloadedAppState = {
+  cart?: CartState
+  session?: SessionState
+}
+
+export function createAppStore(preloadedState?: PreloadedAppState) {
+  const store = configureStore({
     reducer: {
       cart: cartReducer,
       session: sessionReducer,
     },
+    preloadedState: {
+      cart: preloadedState?.cart ?? loadCartState() ?? { items: [] },
+      session: preloadedState?.session ?? { user: null },
+    },
   })
+
+  store.subscribe(() => {
+    saveCartState(store.getState().cart)
+  })
+
+  return store
 }
 
 export const store = createAppStore()

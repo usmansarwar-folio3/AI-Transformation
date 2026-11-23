@@ -1,0 +1,45 @@
+@use '../../styles/variables' as *;
+
+.cart-page__title {
+  margin: 0;
+  color: $color-text;
+}
+
+.cart-page__empty {
+  color: $color-text-secondary;
+}
+
+.cart-page__line {
+  width: 100%;
+}
+
+.cart-page__name {
+  color: $color-text;
+}
+
+.cart-page__meta {
+  color: $color-text-secondary;
+}
+
+.cart-page__qty {
+  width: 100%;
+  max-width: 120px;
+}
+
+.cart-page__summary {
+  color: $color-text;
+}
+
+.cart-page__total {
+  font-size: 1.125rem;
+  color: $color-primary;
+}
+
+.cart-page__auth {
+  width: 100%;
+  max-width: 360px;
+}
+
+.cart-page__error {
+  width: 100%;
+}

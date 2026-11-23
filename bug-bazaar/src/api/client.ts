@@ -24,7 +24,16 @@ import {
 } from './schemas'
 import { requestErrorFromApi, type RequestError } from './requestStatus'
 
-export type { ApiError, Product, ProductCategory, ProductList, ProductSort, User }
+export type {
+  ApiError,
+  OrderCreated,
+  OrderStatus,
+  Product,
+  ProductCategory,
+  ProductList,
+  ProductSort,
+  User,
+}
 export type { RequestError, RequestStatus } from './requestStatus'
 export {
   failure,
