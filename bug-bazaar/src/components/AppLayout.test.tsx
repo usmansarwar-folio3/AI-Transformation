@@ -51,14 +51,14 @@ describe('AppLayout cart badge', () => {
 
     renderLayout(store)
 
-    expect(screen.getByLabelText('Cart, 3 items')).toBeInTheDocument()
-    expect(screen.getByText('3')).toBeInTheDocument()
+    expect(screen.getAllByLabelText('Cart, 3 items').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('3').length).toBeGreaterThan(0)
   })
 
   it('hides the badge count when the cart is empty', () => {
     renderLayout()
 
-    expect(screen.getByLabelText('Cart, empty')).toBeInTheDocument()
+    expect(screen.getAllByLabelText('Cart, empty').length).toBeGreaterThan(0)
     expect(screen.queryByText('0')).not.toBeInTheDocument()
   })
 })

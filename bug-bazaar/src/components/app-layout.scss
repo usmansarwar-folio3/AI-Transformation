@@ -10,6 +10,13 @@
   padding: 16px;
 }
 
+.app-layout__sider--right {
+  overflow: auto;
+  padding: 16px;
+  background: $color-bg-container;
+  border-inline-start: 1px solid $color-border;
+}
+
 .app-layout__brand {
   display: flex;
   align-items: center;

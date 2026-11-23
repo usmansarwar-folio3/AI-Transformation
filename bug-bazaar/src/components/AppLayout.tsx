@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   ApiOutlined,
   LogoutOutlined,
@@ -8,10 +8,11 @@ import {
   ShopOutlined,
   UserOutlined,
 } from '@ant-design/icons'
-import { Badge, Button, Col, Image, Layout, Row, Space, Typography } from 'antd'
+import { Badge, Button, Col, Drawer, Grid, Image, Layout, Row, Space, Typography } from 'antd'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { getAuthToken, logout as clearAuthToken } from '../api'
 import { SidebarFilters } from '../features/browse/SidebarFilters'
+import { MiniCart } from '../features/cart/MiniCart'
 import {
   clearSession,
   selectCartItemCount,
@@ -23,21 +24,40 @@ import './app-layout.scss'
 
 const { Sider, Content, Footer } = Layout
 const { Text } = Typography
+const { useBreakpoint } = Grid
 
 export function AppLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
+  const screens = useBreakpoint()
   const cartItemCount = useAppSelector(selectCartItemCount)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
   const hasToken = Boolean(getAuthToken())
   const signedIn = isLoggedIn && hasToken
   const [leftCollapsed, setLeftCollapsed] = useState(false)
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
+
+  const showRightSider = Boolean(screens.lg)
+  const hideCartDrawer = showRightSider
+
+  useEffect(() => {
+    if (hideCartDrawer) {
+      setCartDrawerOpen(false)
+    }
+  }, [hideCartDrawer])
 
   function handleLogout() {
     clearAuthToken()
     dispatch(clearSession())
     void navigate('/', { replace: true })
+  }
+
+  function openCart() {
+    if (showRightSider) {
+      return
+    }
+    setCartDrawerOpen(true)
   }
 
   return (
@@ -141,9 +161,7 @@ export function AppLayout() {
                   ? 'Cart, empty'
                   : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
               }
-              onClick={() => {
-                void navigate('/cart')
-              }}
+              onClick={openCart}
             >
               Cart
             </Button>
@@ -166,7 +184,25 @@ export function AppLayout() {
             />
           </Col>
           <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12} className="app-layout__toolbar-end">
-            <Text className="app-layout__toolbar-label">The Bug Bazaar</Text>
+            {showRightSider ? (
+              <Text className="app-layout__toolbar-label">The Bug Bazaar</Text>
+            ) : (
+              <Badge count={cartItemCount} overflowCount={99}>
+                <Button
+                  icon={<ShoppingCartOutlined />}
+                  aria-label={
+                    cartItemCount === 0
+                      ? 'Cart, empty'
+                      : `Cart, ${cartItemCount} item${cartItemCount === 1 ? '' : 's'}`
+                  }
+                  onClick={() => {
+                    setCartDrawerOpen(true)
+                  }}
+                >
+                  Cart
+                </Button>
+              </Badge>
+            )}
           </Col>
         </Row>
 
@@ -176,6 +212,35 @@ export function AppLayout() {
 
         <Footer className="app-layout__footer">The Bug Bazaar</Footer>
       </Layout>
+
+      {showRightSider ? (
+        <Sider
+          className="app-layout__sider app-layout__sider--right"
+          theme="light"
+          width={320}
+          collapsible={false}
+        >
+          <MiniCart />
+        </Sider>
+      ) : null}
+
+      <Drawer
+        className="app-layout__cart-drawer"
+        title="Cart"
+        placement="right"
+        open={cartDrawerOpen}
+        onClose={() => {
+          setCartDrawerOpen(false)
+        }}
+        width={320}
+        destroyOnHidden
+      >
+        <MiniCart
+          onCheckoutNavigate={() => {
+            setCartDrawerOpen(false)
+          }}
+        />
+      </Drawer>
     </Layout>
   )
 }
