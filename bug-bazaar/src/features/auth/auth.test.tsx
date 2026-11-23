@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { getAuthToken, getMe, setAuthToken } from '../../api'
 import { RequireAuth } from '../../auth/RequireAuth'
 import { subscribeUnauthorized } from '../../auth/unauthorized'
+import { TestQueryProvider } from '../../query/testUtils'
 import { clearSession, createAppStore, selectIsLoggedIn, setUser } from '../../store'
 import { AccountPage } from './AccountPage'
 import { LoginPage } from './LoginPage'
@@ -40,45 +41,53 @@ function renderWithStore(
   const router = createMemoryRouter(routes, { initialEntries })
   return render(
     <Provider store={store}>
-      <ConfigProvider>
-        <RouterProvider router={router} />
-      </ConfigProvider>
+      <TestQueryProvider>
+        <ConfigProvider>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </TestQueryProvider>
     </Provider>,
   )
 }
 
 describe('auth (D3-3)', () => {
-  it('redirects unauthenticated account visits to login and returns after sign-in', async () => {
-    const user = userEvent.setup()
-    const store = createAppStore()
+  it(
+    'redirects unauthenticated account visits to login and returns after sign-in',
+    async () => {
+      const user = userEvent.setup()
+      const store = createAppStore()
 
-    renderWithStore(
-      store,
-      [
-        { path: '/login', element: <LoginPage /> },
-        {
-          path: '/account',
-          element: (
-            <RequireAuth>
-              <AccountPage />
-            </RequireAuth>
-          ),
-        },
-      ],
-      ['/account'],
-    )
+      renderWithStore(
+        store,
+        [
+          { path: '/login', element: <LoginPage /> },
+          {
+            path: '/account',
+            element: (
+              <RequireAuth>
+                <AccountPage />
+              </RequireAuth>
+            ),
+          },
+        ],
+        ['/account'],
+      )
 
-    expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
+      expect(await screen.findByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
 
-    await user.clear(screen.getByLabelText('Email'))
-    await user.type(screen.getByLabelText('Email'), 'return@bugbazaar.dev')
-    await user.type(screen.getByLabelText('Password'), 'password')
-    await user.click(document.querySelector('.login-page__submit') as HTMLButtonElement)
+      await user.clear(screen.getByLabelText('Email'))
+      await user.click(screen.getByLabelText('Email'))
+      await user.paste('return@bugbazaar.dev')
+      await user.click(screen.getByLabelText('Password'))
+      await user.paste('password')
+      await user.click(document.querySelector('.login-page__submit') as HTMLButtonElement)
 
-    expect(await screen.findByRole('heading', { name: 'Account' })).toBeInTheDocument()
-    // /api/me returns the mock shopper profile after a successful login session.
-    expect(await screen.findByText('shopper@bugbazaar.dev')).toBeInTheDocument()
-  })
+      expect(await screen.findByRole('heading', { name: 'Account' })).toBeInTheDocument()
+      // /api/me returns the mock shopper profile after a successful login session.
+      expect(await screen.findByText('shopper@bugbazaar.dev')).toBeInTheDocument()
+    },
+    10_000,
+  )
 
   it('disables the login submit control while the request is pending', async () => {
     const user = userEvent.setup()

@@ -1,17 +1,9 @@
-import { useEffect, useState } from 'react'
 import { Button, Col, Image, Row, Space, Typography, message } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  failure,
-  getProduct,
-  loading,
-  success,
-  toRequestError,
-  type Product,
-  type RequestStatus,
-} from '../../api'
+import { failure } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
 import { useBackToTop } from '../../hooks'
+import { requestStatusFromQuery, useProductQuery } from '../../query'
 import { addItem, useAppDispatch } from '../../store'
 import { formatPriceFromCents } from '../../utils/formatPrice'
 import './product-details-page.scss'
@@ -25,38 +17,9 @@ type ProductDetailsContentProps = {
 function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
-  const [status, setStatus] = useState<RequestStatus<Product>>(loading())
-  const [retryCount, setRetryCount] = useState(0)
+  const productQuery = useProductQuery(productId)
+  const status = requestStatusFromQuery(productQuery)
   const { isVisible: showBackToTop, scrollToTop } = useBackToTop()
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    // Loading reset on productId change comes from `key={productId}` remount
-    // (avoids setState-in-effect). Abort + guards below stop late responses.
-    void getProduct(productId, controller.signal)
-      .then((result) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(success(result))
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(failure(toRequestError(error)))
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [productId, retryCount])
-
-  function handleRetry() {
-    setStatus(loading())
-    setRetryCount((count) => count + 1)
-  }
 
   return (
     <Row className="product-details-page" gutter={[24, 24]}>
@@ -78,7 +41,9 @@ function ProductDetailsContent({ productId }: ProductDetailsContentProps) {
         emptyTitle="Product unavailable"
         emptyDescription="This product has no details to show."
         isEmpty={() => false}
-        onRetry={handleRetry}
+        onRetry={() => {
+          void productQuery.refetch()
+        }}
       >
         {(product) => (
           <>

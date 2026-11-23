@@ -1,16 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Button, Col, Row, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
-import {
-  failure,
-  getOrder,
-  loading,
-  success,
-  toRequestError,
-  type OrderStatus,
-  type RequestStatus,
-} from '../../api'
+import { failure } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
+import { requestStatusFromQuery, useOrderQuery } from '../../query'
 import './order-confirmation-page.scss'
 
 const { Title, Text, Paragraph } = Typography
@@ -21,30 +13,8 @@ type OrderConfirmationContentProps = {
 
 function OrderConfirmationContent({ orderId }: OrderConfirmationContentProps) {
   const navigate = useNavigate()
-  const [status, setStatus] = useState<RequestStatus<OrderStatus>>(loading())
-  const [retryCount, setRetryCount] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    void getOrder(orderId, controller.signal)
-      .then((result) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(success(result))
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(failure(toRequestError(error)))
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [orderId, retryCount])
+  const orderQuery = useOrderQuery(orderId)
+  const status = requestStatusFromQuery(orderQuery)
 
   return (
     <Row className="order-confirmation-page" gutter={[16, 16]}>
@@ -61,8 +31,7 @@ function OrderConfirmationContent({ orderId }: OrderConfirmationContentProps) {
         emptyDescription="This order has no details to show."
         isEmpty={() => false}
         onRetry={() => {
-          setStatus(loading())
-          setRetryCount((count) => count + 1)
+          void orderQuery.refetch()
         }}
       >
         {(order) => (

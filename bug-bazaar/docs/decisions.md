@@ -8,7 +8,7 @@ Record library and technique choices here: what you used, what else you consider
 | --- | --- | --- | --- |
 | HTTP client | Native `fetch` wrapper in `src/api/client.ts` | Axios | Six endpoints; week scores status codes, abort, and error mapping. No extra dependency. MSW mocks `fetch` directly. |
 | Runtime validation | Zod | Manual type guards | Shared schemas for `Product` and `ApiError` at the API boundary. |
-| Server cache (planned) | TanStack Query | Hand-written `useEffect` cache | Covers D3-5 reuse and stock refresh, D2 UI states, abort, and latest-query-wins. |
+| Server cache | TanStack Query | Hand-written `useEffect` cache | Covers D3-5 reuse and stock refresh; queries still call `client.ts`. |
 | Client state | Redux Toolkit | Context only | Tracker row D3-1; cart and session are client state (confirmed in D3-1). |
 | Routing | React Router | Manual history / Next-style file routes | Needed for list + details now; URL filter sync comes in D2-2. |
 | UI library | Ant Design + SCSS (BEM) | Raw HTML/CSS | Mandatory project standard in `UI.md`. |
@@ -83,7 +83,7 @@ Record library and technique choices here: what you used, what else you consider
 | --- | --- | --- | --- |
 | Debounce hook | Generic `useDebouncedValue<T>` in `src/hooks/` | `useDebouncedCallback` only; feature-named `useProductSearch` | Reusable for any value; browse search wires draft → debounced → URL commit. |
 | Scroll hook | `useBackToTop({ thresholdPx })` → `{ isVisible, scrollToTop }` | Leave listener in the page; bare `useWindowScrollThreshold` | Removes duplicated scroll/cleanup from details; still generic (no product id). |
-| HTTP in hooks | Keep `getProducts` / `getProduct` calls in page effects via `client.ts` | `useProduct` / `useProducts` API hooks | Hooks must not become a second HTTP stack; TanStack Query comes later. |
+| HTTP in hooks | Keep `getProducts` / `getProduct` via `client.ts` (later through Query) | Hooks that call `fetch` directly | Hooks must not become a second HTTP stack; D3-5 Query `queryFn`s still call the client. |
 
 ## D2-6 Race conditions
 
@@ -129,3 +129,17 @@ Record library and technique choices here: what you used, what else you consider
 | 400 | Friendly field copy from known keys (not API detail strings) | Pass through `details` values | Field errors without leaking server wording. |
 | 401 / 404 / 409 / 500 | Fixed titles + descriptions; 409 names item from details/cart; Retry only when `showRetry` | Always show Retry | Matches buy.md: sign-out already in client; Not Found; named OOS; retry for server faults. |
 | Wiring | AsyncStatusView + login form fields + checkout alert all call the mapper | Duplicate switch statements | List/details/account/order/login/checkout stay consistent. |
+
+## D3-5 Caching
+
+| Decision | Chose | Considered | Why |
+| --- | --- | --- | --- |
+| Server cache | TanStack Query (`QueryClientProvider` + feature hooks) | Keep per-page `useEffect` fetches; put lists in Redux | Revisit reuse + invalidation without a second HTTP stack; Redux stays cart/session only. |
+| HTTP boundary | Query `queryFn` calls `src/api/client.ts` only | Fetch inside Query hooks | Same Zod/auth/abort path; ESLint “no fetch in components” still holds. |
+| Stale policy | `staleTime` 30s for products/me; orders `Infinity`; no refetch-on-focus | Always fresh; long multi-minute stale | Brief catalog lag is OK for browse; stock must refresh after checkout via invalidate. |
+| Stock after order | `invalidateQueries(productKeys.all)` on successful `createOrder` | Manual stock patch in Redux | Catalog is server truth; invalidation refetches list/detail on next read. |
+| Search races | Rely on Query cancel via `signal` when the list key changes | Keep a parallel request-id guard in the page | Abort/latest-wins still holds; Query drops cancelled results. |
+
+### When stale data is acceptable
+
+Product list/detail (and `/me`) may show cached data for up to **30 seconds** without a background refetch. That is acceptable for browse: prices and copy rarely change mid-session, and a short lag beats a spinner on every revisit. **Not** acceptable to keep stale stock after checkout — successful orders invalidate all product queries so the next visit refetches. Placed orders are treated as immutable (`staleTime: Infinity`). Cart and session never go through Query.

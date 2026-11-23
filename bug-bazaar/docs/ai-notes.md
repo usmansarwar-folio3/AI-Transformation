@@ -136,3 +136,18 @@ Use MSW; no real backend.
 - Added `mapApiErrorToUi` / `toRequestError` as the single status→copy path
 - AsyncStatusView, login, and checkout consume mapped titles/descriptions (Retry only when appropriate)
 - Field errors use app copy keyed by field name, not raw API detail strings
+
+## D3-5 — Caching
+
+**Prompt:** TanStack Query for server cache; Redux keeps cart/session; reuse on revisit; invalidate products after order; document when stale is OK; queries still call `client.ts`.
+
+**Kept:**
+- Typed client as the only HTTP boundary
+- Redux cart + session slices; memory token
+- AbortSignal on list fetches (Query cancels via `signal` when the key changes)
+
+**Changed and why:**
+- Added `src/query/` (client, keys, hooks, `requestStatusFromQuery`) and wrapped the app in `QueryClientProvider`
+- Migrated product list/details, account (`/me`), and order confirmation to Query
+- Checkout invalidates `productKeys.all` after a successful order so stock refreshes
+- Documented 30s staleTime policy in `docs/decisions.md`

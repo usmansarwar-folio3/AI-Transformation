@@ -1,9 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { ConfigProvider } from 'antd'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
 import { subscribeUnauthorized } from './auth/unauthorized'
+import { queryClient } from './query'
 import { clearSession, store } from './store'
 import { themeConfig } from './theme/themeConfig'
 import App from './App.tsx'
@@ -34,11 +36,13 @@ void enableMockApi().then(() => {
   createRoot(rootElement).render(
     <StrictMode>
       <Provider store={store}>
-        <ConfigProvider theme={themeConfig}>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </ConfigProvider>
+        <QueryClientProvider client={queryClient}>
+          <ConfigProvider theme={themeConfig}>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </ConfigProvider>
+        </QueryClientProvider>
       </Provider>
     </StrictMode>,
   )

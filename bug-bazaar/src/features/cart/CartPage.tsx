@@ -9,6 +9,7 @@ import {
   Space,
   Typography,
 } from 'antd'
+import { useQueryClient } from '@tanstack/react-query'
 import { useLocation, useNavigate } from 'react-router-dom'
 import {
   createOrder,
@@ -17,6 +18,7 @@ import {
   type OrderCreated,
   type RequestError,
 } from '../../api'
+import { productKeys } from '../../query'
 import {
   clearCart,
   removeItem,
@@ -39,6 +41,7 @@ export function CartPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
+  const queryClient = useQueryClient()
   const items = useAppSelector(selectCartItems)
   const totalCents = useAppSelector(selectCartTotalCents)
   const isLoggedIn = useAppSelector(selectIsLoggedIn)
@@ -82,6 +85,8 @@ export function CartPage() {
         })),
         idempotencyKey: ensureIdempotencyKey(),
       })
+      // Refresh catalog stock after a successful order (D3-5).
+      await queryClient.invalidateQueries({ queryKey: productKeys.all })
       dispatch(clearCart())
       idempotencyKeyRef.current = null
       void navigate(`/orders/${order.id}`)

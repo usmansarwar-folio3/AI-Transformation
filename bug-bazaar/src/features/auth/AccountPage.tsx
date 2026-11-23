@@ -1,17 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Button, Col, Row, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
-import {
-  failure,
-  getMe,
-  loading,
-  logout as clearAuthToken,
-  success,
-  toRequestError,
-  type RequestStatus,
-  type User,
-} from '../../api'
+import { logout as clearAuthToken } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
+import { requestStatusFromQuery, useMeQuery } from '../../query'
 import { clearSession, selectSessionUser, useAppDispatch, useAppSelector } from '../../store'
 import './account-page.scss'
 
@@ -21,30 +12,8 @@ export function AccountPage() {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const sessionUser = useAppSelector(selectSessionUser)
-  const [status, setStatus] = useState<RequestStatus<User>>(loading())
-  const [retryCount, setRetryCount] = useState(0)
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    void getMe(controller.signal)
-      .then((user) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(success(user))
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted) {
-          return
-        }
-        setStatus(failure(toRequestError(error)))
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [retryCount])
+  const meQuery = useMeQuery()
+  const status = requestStatusFromQuery(meQuery)
 
   function handleLogout() {
     clearAuthToken()
@@ -67,8 +36,7 @@ export function AccountPage() {
         emptyDescription="No account details to show."
         isEmpty={() => false}
         onRetry={() => {
-          setStatus(loading())
-          setRetryCount((count) => count + 1)
+          void meQuery.refetch()
         }}
       >
         {(user) => (

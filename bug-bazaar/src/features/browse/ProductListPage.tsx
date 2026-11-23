@@ -1,16 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
 import { Col, Pagination, Row, Typography } from 'antd'
 import { useSearchParams } from 'react-router-dom'
-import {
-  failure,
-  getProducts,
-  loading,
-  success,
-  toRequestError,
-  type ProductList,
-  type RequestStatus,
-} from '../../api'
+import type { ProductList, ProductQuery, RequestStatus } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
+import { requestStatusFromQuery, useProductsQuery } from '../../query'
 import { ProductCard } from './ProductCard'
 import { ProductFilters } from './ProductFilters'
 import {
@@ -35,71 +27,18 @@ function readSlow(params: URLSearchParams): boolean {
 }
 
 type ProductListResultsProps = {
-  filterKey: string
-  filters: ProductListFilters
-  forceError: 500 | undefined
-  slow: boolean
+  status: RequestStatus<ProductList>
+  page: number
   onPageChange: (page: number) => void
-  onTotalChange: (total: number | null) => void
+  onRetry: () => void
 }
 
 function ProductListResults({
-  filterKey,
-  filters,
-  forceError,
-  slow,
+  status,
+  page,
   onPageChange,
-  onTotalChange,
+  onRetry,
 }: ProductListResultsProps) {
-  const [status, setStatus] = useState<RequestStatus<ProductList>>(loading())
-  const [retryCount, setRetryCount] = useState(0)
-  const [statusKey, setStatusKey] = useState(filterKey)
-  const requestIdRef = useRef(0)
-
-  // Fresh loading UI when filters change without remounting (keeps one effect instance for races).
-  if (filterKey !== statusKey) {
-    setStatusKey(filterKey)
-    setStatus(loading())
-  }
-
-  useEffect(() => {
-    const controller = new AbortController()
-    const requestId = ++requestIdRef.current
-
-    void getProducts(
-      {
-        ...toProductQuery(filters),
-        ...(forceError ? { forceError } : {}),
-        ...(slow ? { slow: true } : {}),
-      },
-      controller.signal,
-    )
-      .then((result) => {
-        // Latest-query-wins: abort cleanup + ignore stale completions.
-        if (controller.signal.aborted || requestId !== requestIdRef.current) {
-          return
-        }
-        setStatus(success(result))
-        onTotalChange(result.total)
-      })
-      .catch((error: unknown) => {
-        if (controller.signal.aborted || requestId !== requestIdRef.current) {
-          return
-        }
-        setStatus(failure(toRequestError(error)))
-      })
-
-    return () => {
-      controller.abort()
-    }
-  }, [filterKey, filters, forceError, slow, retryCount, onTotalChange])
-
-  function handleRetry() {
-    setStatus(loading())
-    onTotalChange(null)
-    setRetryCount((count) => count + 1)
-  }
-
   return (
     <AsyncStatusView
       status={status}
@@ -107,7 +46,7 @@ function ProductListResults({
       emptyTitle="No products found"
       emptyDescription="Try clearing filters or searching for something else."
       isEmpty={(data) => data.items.length === 0}
-      onRetry={handleRetry}
+      onRetry={onRetry}
     >
       {(data) => (
         <>
@@ -120,15 +59,15 @@ function ProductListResults({
             <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
               <Pagination
                 className="product-list-page__pagination"
-                current={filters.page}
+                current={page}
                 pageSize={PRODUCTS_PAGE_SIZE}
                 total={data.total}
                 showSizeChanger={false}
                 hideOnSinglePage={false}
                 disabled={data.total === 0}
                 aria-label="Product list pages"
-                onChange={(page) => {
-                  onPageChange(page)
+                onChange={(nextPage) => {
+                  onPageChange(nextPage)
                 }}
               />
             </Col>
@@ -140,7 +79,6 @@ function ProductListResults({
 }
 
 type ProductListBodyProps = {
-  filterKey: string
   filters: ProductListFilters
   forceError: 500 | undefined
   slow: boolean
@@ -154,7 +92,6 @@ type ProductListBodyProps = {
 }
 
 function ProductListBody({
-  filterKey,
   filters,
   forceError,
   slow,
@@ -166,13 +103,14 @@ function ProductListBody({
   onPageChange,
   onClear,
 }: ProductListBodyProps) {
-  const [total, setTotal] = useState<number | null>(null)
-  const [totalForKey, setTotalForKey] = useState(filterKey)
-
-  if (filterKey !== totalForKey) {
-    setTotalForKey(filterKey)
-    setTotal(null)
+  const query: ProductQuery = {
+    ...toProductQuery(filters),
+    ...(forceError ? { forceError } : {}),
+    ...(slow ? { slow: true } : {}),
   }
+  const productsQuery = useProductsQuery(query)
+  const status = requestStatusFromQuery(productsQuery)
+  const total = productsQuery.data?.total ?? null
 
   return (
     <>
@@ -190,12 +128,12 @@ function ProductListBody({
       </Col>
 
       <ProductListResults
-        filterKey={filterKey}
-        filters={filters}
-        forceError={forceError}
-        slow={slow}
+        status={status}
+        page={filters.page}
         onPageChange={onPageChange}
-        onTotalChange={setTotal}
+        onRetry={() => {
+          void productsQuery.refetch()
+        }}
       />
     </>
   )
@@ -203,7 +141,6 @@ function ProductListBody({
 
 export function ProductListPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const filterKey = searchParams.toString()
   const filters = parseProductFilters(searchParams)
   const forceError = readForceError(searchParams)
   const slow = readSlow(searchParams)
@@ -259,7 +196,6 @@ export function ProductListPage() {
       </Col>
 
       <ProductListBody
-        filterKey={filterKey}
         filters={filters}
         forceError={forceError}
         slow={slow}

@@ -6,6 +6,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { createOrder, login } from '../../api'
 import { mockMeta } from '../../mocks/handlers'
+import { TestQueryProvider } from '../../query/testUtils'
 import { addItem, createAppStore, setUser } from '../../store'
 import { CartPage } from './CartPage'
 
@@ -20,9 +21,11 @@ function renderCart(store = createAppStore()) {
 
   return render(
     <Provider store={store}>
-      <ConfigProvider>
-        <RouterProvider router={router} />
-      </ConfigProvider>
+      <TestQueryProvider>
+        <ConfigProvider>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </TestQueryProvider>
     </Provider>,
   )
 }

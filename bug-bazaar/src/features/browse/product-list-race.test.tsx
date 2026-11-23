@@ -3,6 +3,7 @@ import { ConfigProvider } from 'antd'
 import { createMemoryRouter, RouterProvider } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { Product, ProductList, ProductQuery } from '../../api'
+import { TestQueryProvider } from '../../query/testUtils'
 import { ProductListPage } from './ProductListPage'
 
 const getProducts = vi.hoisted(() => vi.fn())
@@ -74,9 +75,11 @@ describe('product list search races (D2-6)', () => {
     )
 
     render(
-      <ConfigProvider>
-        <RouterProvider router={router} />
-      </ConfigProvider>,
+      <TestQueryProvider>
+        <ConfigProvider>
+          <RouterProvider router={router} />
+        </ConfigProvider>
+      </TestQueryProvider>,
     )
 
     return router
@@ -117,26 +120,21 @@ describe('product list search races (D2-6)', () => {
   })
 
   it('aborts the in-flight list request when search changes', async () => {
-    getProducts.mockImplementation((query: ProductQuery = {}, signal?: AbortSignal) => {
-      pending.push({
-        query,
-        signal,
-        resolve: () => undefined,
-      })
-      return Promise.resolve(listOf([makeProduct('p-0001', `Result ${query.search ?? 'all'}`)]))
-    })
-
     const router = renderList('/')
-    expect(await screen.findByText('Result all')).toBeInTheDocument()
 
+    await waitFor(() => expect(pending.length).toBeGreaterThan(0))
     const firstSignal = pending[0]?.signal
     expect(firstSignal).toBeDefined()
+    expect(firstSignal?.aborted).toBe(false)
 
     await act(async () => {
       await router.navigate('/?search=cable')
     })
+    await waitFor(() => expect(lastCallFor('cable')).toBeTruthy())
 
-    expect(await screen.findByText('Result cable')).toBeInTheDocument()
     expect(firstSignal?.aborted).toBe(true)
+
+    lastCallFor('cable').resolve(listOf([makeProduct('p-cable', 'Result cable')]))
+    expect(await screen.findByText('Result cable')).toBeInTheDocument()
   })
 })
