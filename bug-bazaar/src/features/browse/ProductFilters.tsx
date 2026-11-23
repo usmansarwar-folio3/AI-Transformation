@@ -25,6 +25,10 @@ type ProductFiltersProps = {
   onInStockChange: (inStock: boolean) => void
   onClear: () => void
   canClear: boolean
+  /** Stack controls for the left sider; default is the wide list toolbar. */
+  layout?: 'horizontal' | 'vertical'
+  /** Hide the result-count line (sidebar leaves count to the list page). */
+  hideCount?: boolean
 }
 
 export function ProductFilters({
@@ -36,9 +40,15 @@ export function ProductFilters({
   onInStockChange,
   onClear,
   canClear,
+  layout = 'horizontal',
+  hideCount = false,
 }: ProductFiltersProps) {
   const [searchDraft, setSearchDraft] = useState(filters.search)
   const [syncedSearch, setSyncedSearch] = useState(filters.search)
+  const isVertical = layout === 'vertical'
+  const fieldSpan = isVertical
+    ? { xs: 24, sm: 24, md: 24, lg: 24, xl: 24, xxl: 24 }
+    : undefined
 
   // Keep the draft aligned when the URL search changes externally (clear, Back/Forward).
   if (filters.search !== syncedSearch) {
@@ -62,8 +72,20 @@ export function ProductFilters({
   }, [debouncedSearch, searchDraft, filters.search, onSearchCommit])
 
   return (
-    <Row className="product-filters" gutter={[16, 16]}>
-      <Col xs={24} sm={24} md={12} lg={8} xl={8} xxl={6}>
+    <Row
+      className={
+        isVertical ? 'product-filters product-filters--vertical' : 'product-filters'
+      }
+      gutter={[16, 16]}
+    >
+      <Col
+        xs={fieldSpan?.xs ?? 24}
+        sm={fieldSpan?.sm ?? 24}
+        md={fieldSpan?.md ?? 12}
+        lg={fieldSpan?.lg ?? 8}
+        xl={fieldSpan?.xl ?? 8}
+        xxl={fieldSpan?.xxl ?? 6}
+      >
         <Input.Search
           className="product-filters__search"
           placeholder="Search products"
@@ -82,7 +104,14 @@ export function ProductFilters({
         />
       </Col>
 
-      <Col xs={24} sm={12} md={6} lg={4} xl={4} xxl={4}>
+      <Col
+        xs={fieldSpan?.xs ?? 24}
+        sm={fieldSpan?.sm ?? 12}
+        md={fieldSpan?.md ?? 6}
+        lg={fieldSpan?.lg ?? 4}
+        xl={fieldSpan?.xl ?? 4}
+        xxl={fieldSpan?.xxl ?? 4}
+      >
         <Select
           className="product-filters__select"
           placeholder="Category"
@@ -96,7 +125,14 @@ export function ProductFilters({
         />
       </Col>
 
-      <Col xs={24} sm={12} md={6} lg={5} xl={5} xxl={4}>
+      <Col
+        xs={fieldSpan?.xs ?? 24}
+        sm={fieldSpan?.sm ?? 12}
+        md={fieldSpan?.md ?? 6}
+        lg={fieldSpan?.lg ?? 5}
+        xl={fieldSpan?.xl ?? 5}
+        xxl={fieldSpan?.xxl ?? 4}
+      >
         <Select
           className="product-filters__select"
           placeholder="Sort by"
@@ -110,7 +146,14 @@ export function ProductFilters({
         />
       </Col>
 
-      <Col xs={24} sm={12} md={8} lg={4} xl={4} xxl={4}>
+      <Col
+        xs={fieldSpan?.xs ?? 24}
+        sm={fieldSpan?.sm ?? 12}
+        md={fieldSpan?.md ?? 8}
+        lg={fieldSpan?.lg ?? 4}
+        xl={fieldSpan?.xl ?? 4}
+        xxl={fieldSpan?.xxl ?? 4}
+      >
         <Space className="product-filters__stock" align="center">
           <Switch
             checked={filters.inStock}
@@ -121,23 +164,28 @@ export function ProductFilters({
         </Space>
       </Col>
 
-      <Col xs={24} sm={12} md={8} lg={3} xl={3} xxl={3}>
-        <Button
-          className="product-filters__clear"
-          disabled={!canClear}
-          onClick={onClear}
-        >
+      <Col
+        xs={fieldSpan?.xs ?? 24}
+        sm={fieldSpan?.sm ?? 12}
+        md={fieldSpan?.md ?? 8}
+        lg={fieldSpan?.lg ?? 3}
+        xl={fieldSpan?.xl ?? 3}
+        xxl={fieldSpan?.xxl ?? 3}
+      >
+        <Button className="product-filters__clear" disabled={!canClear} onClick={onClear}>
           Clear filters
         </Button>
       </Col>
 
-      <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-        <Text className="product-filters__count">
-          {total === null
-            ? 'Loading results…'
-            : formatProductResultRange(filters.page, PRODUCTS_PAGE_SIZE, total)}
-        </Text>
-      </Col>
+      {hideCount ? null : (
+        <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+          <Text className="product-filters__count">
+            {total === null
+              ? 'Loading results…'
+              : formatProductResultRange(filters.page, PRODUCTS_PAGE_SIZE, total)}
+          </Text>
+        </Col>
+      )}
     </Row>
   )
 }

@@ -1,0 +1,12 @@
+@use '../../styles/variables' as *;
+
+.sidebar-filters {
+  margin-block-start: 16px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid $color-sider-divider;
+}
+
+.sidebar-filters__title {
+  margin-block: 0 12px;
+  color: $color-on-sider;
+}
