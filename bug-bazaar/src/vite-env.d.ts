@@ -7,6 +7,8 @@ declare const __BUGBAZAR_ENABLE_MOCKS__: string
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL?: string
   readonly VITE_ENABLE_MOCKS?: string
+  /** Optional external WebSocket URL for live stock (skip same-origin /stock). */
+  readonly VITE_STOCK_WS_URL?: string
 }
 
 interface ImportMeta {

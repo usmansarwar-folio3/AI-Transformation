@@ -3,9 +3,15 @@ import type { Duplex } from 'node:stream'
 import type { Plugin } from 'vite'
 import { WebSocketServer, type WebSocket } from 'ws'
 
-type StockTick = {
-  productId: string
-  stock: number
+/** Keep in sync with `src/features/stock/mockStockTick.ts` (Vite node config cannot import that module graph). */
+const MOCK_STOCK_TICK_INTERVAL_MS = 2500
+
+function nextMockStockTick(): { productId: string; stock: number } {
+  const n = Math.floor(Math.random() * 20) + 1
+  return {
+    productId: `p-${String(n).padStart(4, '0')}`,
+    stock: Math.floor(Math.random() * 40) + 1,
+  }
 }
 
 /**
@@ -42,19 +48,14 @@ export function stockFeedPlugin(): Plugin {
           return
         }
 
-        const n = Math.floor(Math.random() * 20) + 1
-        const tick: StockTick = {
-          productId: `p-${String(n).padStart(4, '0')}`,
-          stock: Math.floor(Math.random() * 40) + 1,
-        }
-        const payload = JSON.stringify(tick)
+        const payload = JSON.stringify(nextMockStockTick())
 
         for (const client of clients) {
           if (client.readyState === client.OPEN) {
             client.send(payload)
           }
         }
-      }, 2500)
+      }, MOCK_STOCK_TICK_INTERVAL_MS)
 
       server.httpServer?.on('close', () => {
         clearInterval(timer)

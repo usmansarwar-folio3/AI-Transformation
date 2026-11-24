@@ -125,7 +125,7 @@ describe('ProductCard', () => {
 
     renderCard(lowStockProduct, store)
 
-    const button = screen.getByRole('button', { name: 'Cart full (2)' })
+    const button = screen.getByRole('button', { name: 'Max added (2)' })
     expect(button).toBeDisabled()
     expect(selectCartItemCount(store.getState())).toBe(2)
 

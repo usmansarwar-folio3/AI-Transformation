@@ -57,9 +57,9 @@ Delivery flow:
 | Production Branch | `main` |
 | Build Command | `npm run build` |
 | Output Directory | `dist` |
-| Env | `BUGBAZAR_ENABLE_MOCKS=true` (required for the training mock API) |
+| Env | `BUGBAZAR_ENABLE_MOCKS=true` (required for the training mock API **and** live-stock poller) |
 
-Optional: `VITE_API_BASE_URL` if the API base is not `/api`. Custom domains are optional; Vercel provides `*.vercel.app` by default. SPA client routes are handled by `vercel.json` rewrites.
+Optional: `VITE_API_BASE_URL` if the API base is not `/api`. Do **not** set `VITE_STOCK_WS_URL` on Vercel unless you run a separate WebSocket host — production live stock uses an in-browser mock poller (same tick shape as local `/stock`). Custom domains are optional; Vercel provides `*.vercel.app` by default. SPA client routes are handled by `vercel.json` rewrites.
 
 ## Routes (D2-1)
 

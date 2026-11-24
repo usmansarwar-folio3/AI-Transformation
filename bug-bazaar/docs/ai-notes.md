@@ -177,6 +177,7 @@ Use MSW; no real backend.
 - Skip link + `role="main"` + announced login Alert; Lighthouse a11y ≥ 0.90 on home/cart/login
 - `React.memo(ProductCard)` after measuring 20 re-renders on cart updates
 - Vite `/stock` WebSocket + `useLiveStock` with reconnect and unmount close
+- Production/Vercel: same hook uses an in-browser mock poller when `BUGBAZAR_ENABLE_MOCKS` is set (no `VITE_STOCK_WS_URL` needed)
 - GitHub Actions CI under `bug-bazaar/`; `AppErrorBoundary` + `docs/monitoring.md`
 
 ## AI mistake
@@ -195,4 +196,4 @@ The Day 5 reflection (`docs/reflection.md`) and the live walkthrough. Those need
 
 **Mistake:** Product list/details always called `message.success` right after `dispatch(addItem(...))`. The cart reducer already clamps to stock, so at the cap the dispatch was a no-op (or did not increase qty) while the UI still claimed the item was added.
 
-**How caught:** Adding the same product until stock on the card, then clicking again — toast said success, badge/count did not move. Fixed with `useAddProductToCart`: compare cart qty to live `product.stock`, disable + **Cart full (N)** at the cap, warn instead of success if a full-cart click fires, and only success-toast when qty actually increases. Live stock rising re-enables the button automatically.
+**How caught:** Adding the same product until stock on the card, then clicking again — toast said success, badge/count did not move. Fixed with `useAddProductToCart`: compare cart qty to live `product.stock`, disable + **Max added (N)** at the cap, warn instead of success if a full-cart click fires, and only success-toast when qty actually increases. Live stock rising re-enables the button automatically.

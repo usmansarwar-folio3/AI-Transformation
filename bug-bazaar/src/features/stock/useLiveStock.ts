@@ -2,23 +2,35 @@ import { useEffect, useMemo, useState } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { applyStockUpdate } from '../../mocks/seed'
 import { applyStockTickToCache } from './applyStockTickToCache'
-import { stockTickSchema } from './stockTick'
+import { resolveLiveStockTransport, resolveStockSocketUrl } from './liveStockTransport'
+import { MOCK_STOCK_TICK_INTERVAL_MS, nextMockStockTick } from './mockStockTick'
+import { stockTickSchema, type StockTick } from './stockTick'
 
 export type LiveStockStatus = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'closed'
 
-function stockSocketUrl(): string {
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-  return `${protocol}://${window.location.host}/stock`
+function applyTick(
+  queryClient: ReturnType<typeof useQueryClient>,
+  watchedIds: Set<string>,
+  tick: StockTick,
+): void {
+  applyStockUpdate(tick.productId, tick.stock)
+  if (!watchedIds.has(tick.productId)) {
+    return
+  }
+  applyStockTickToCache(queryClient, tick)
 }
 
 /**
- * Subscribe to the Vite `/stock` WebSocket while the caller is mounted.
- * Patches the in-memory catalog and TanStack Query cache for watched ids.
- * Reconnects with backoff; closes on unmount.
+ * Live stock while mounted: WebSocket in Vite DEV (or VITE_STOCK_WS_URL),
+ * in-browser mock poller on static hosts with mocks (e.g. Vercel).
+ * Reconnects / remounts recover; unmount stops the feed.
  */
 export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
   const queryClient = useQueryClient()
-  const [status, setStatus] = useState<LiveStockStatus>('connecting')
+  const transport = resolveLiveStockTransport()
+  const [socketStatus, setSocketStatus] = useState<LiveStockStatus>(() =>
+    transport === 'socket' ? 'connecting' : 'closed',
+  )
   const watchedKey = [...productIds].sort().join(',')
   const watchedIds = useMemo(
     () => new Set(watchedKey === '' ? [] : watchedKey.split(',')),
@@ -27,6 +39,10 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
 
   useEffect(() => {
     if (typeof window === 'undefined' || watchedIds.size === 0) {
+      return
+    }
+
+    if (transport !== 'socket') {
       return
     }
 
@@ -49,7 +65,7 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
       const delayMs = Math.min(1000 * 2 ** retryAttempt, 10_000)
       retryAttempt += 1
       reconnectTimer = window.setTimeout(() => {
-        setStatus('reconnecting')
+        setSocketStatus('reconnecting')
         connect()
       }, delayMs)
     }
@@ -60,14 +76,14 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
       }
 
       clearReconnect()
-      socket = new WebSocket(stockSocketUrl())
+      socket = new WebSocket(resolveStockSocketUrl())
 
       socket.addEventListener('open', () => {
         if (disposed) {
           return
         }
         retryAttempt = 0
-        setStatus('open')
+        setSocketStatus('open')
       })
 
       socket.addEventListener('message', (event) => {
@@ -87,14 +103,7 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
           return
         }
 
-        const tick = tickResult.data
-        applyStockUpdate(tick.productId, tick.stock)
-
-        if (!watchedIds.has(tick.productId)) {
-          return
-        }
-
-        applyStockTickToCache(queryClient, tick)
+        applyTick(queryClient, watchedIds, tickResult.data)
       })
 
       socket.addEventListener('close', () => {
@@ -118,11 +127,42 @@ export function useLiveStock(productIds: readonly string[]): LiveStockStatus {
         socket.close()
       }
     }
-  }, [queryClient, watchedIds])
+  }, [queryClient, transport, watchedIds])
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || watchedIds.size === 0) {
+      return
+    }
+
+    if (transport !== 'poll') {
+      return
+    }
+
+    let disposed = false
+    const timer = window.setInterval(() => {
+      if (disposed) {
+        return
+      }
+      applyTick(queryClient, watchedIds, nextMockStockTick())
+    }, MOCK_STOCK_TICK_INTERVAL_MS)
+
+    return () => {
+      disposed = true
+      window.clearInterval(timer)
+    }
+  }, [queryClient, transport, watchedIds])
 
   if (watchedIds.size === 0) {
     return 'idle'
   }
 
-  return status
+  if (transport === 'poll') {
+    return 'open'
+  }
+
+  if (transport === 'none') {
+    return 'closed'
+  }
+
+  return socketStatus
 }

@@ -155,8 +155,9 @@ Product list/detail (and `/me`) may show cached data for up to **30 seconds** wi
 
 | Decision | Chose | Considered | Why |
 | --- | --- | --- | --- |
-| Transport | Dev WebSocket at `/stock` (Vite plugin + `ws`) | Polling every N seconds; SSE | Bidirectional-ready, low latency for many clients; teaches when WebSockets fit. |
+| Transport (local) | Dev WebSocket at `/stock` (Vite plugin + `ws`) | Polling only; SSE | Bidirectional-ready, low latency; teaches when WebSockets fit. |
+| Transport (Vercel / static) | In-browser mock poller (~2.5s) when `BUGBAZAR_ENABLE_MOCKS` | Same-origin WS on Vercel; PartyKit/Pusher | Static hosts have no upgrade server; poller reuses the same tick + cache apply path. Optional `VITE_STOCK_WS_URL` for a real external WS later. |
 | Cache update | Patch TanStack Query lists/details + mutate `productCatalog` | Invalidate on every tick | Instant UI without a refetch storm; catalog stays aligned for the next HTTP read. |
-| Lifecycle | `useLiveStock` reconnect with backoff; close on unmount | Leave socket open in a global singleton | Meets “recovers after disconnect” and “stops when the page closes”. |
+| Lifecycle | WS reconnect with backoff; poller cleared on unmount | Leave socket/timer in a global singleton | Meets “recovers after disconnect/remount” and “stops when the page closes”. |
 
-When polling would be better: rare stock checks, no server push support, or many short-lived tabs where a socket per tab is costly. When SSE would be better: one-way server→client only and you want automatic reconnect over HTTP without a WS upgrade path.
+When polling would be better: static hosting (Vercel/GitHub Pages), rare stock checks, no server push support, or many short-lived tabs where a socket per tab is costly. When SSE would be better: one-way server→client only and you want automatic reconnect over HTTP without a WS upgrade path. When WebSockets would be better: many clients need low-latency bidirectional push from a real backend.

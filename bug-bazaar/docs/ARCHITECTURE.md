@@ -45,7 +45,7 @@ flowchart TB
   query[TanStack Query cache]
   redux[Redux cart and session]
   url[URL search params]
-  stock[Vite /stock WebSocket]
+  stock[Live stock WS or mock poller]
 
   ui --> hooks
   ui --> redux
@@ -80,6 +80,6 @@ Browse reads filters from the URL, loads products through Query → client → M
 
 - `useDebouncedValue` — search draft → URL without network code.
 - `useBackToTop` — scroll listener + cleanup on the details page.
-- `useLiveStock` — WebSocket subscribe, reconnect, cache patch, unmount close.
+- `useLiveStock` — WebSocket in Vite DEV (or `VITE_STOCK_WS_URL`); mock poller on static hosts with mocks; reconnect / unmount stop.
 
 Hooks sit **above** the typed client. They are not a second HTTP layer.
