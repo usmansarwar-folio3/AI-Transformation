@@ -5,6 +5,14 @@ export function selectCartItems(state: RootState) {
   return state.cart.items
 }
 
+/** Quantity of a product already in the cart (0 if absent). */
+export function selectCartQuantityByProductId(productId: string) {
+  return (state: RootState): number => {
+    const item = state.cart.items.find((entry) => entry.productId === productId)
+    return item?.quantity ?? 0
+  }
+}
+
 export function selectSessionUser(state: RootState) {
   return state.session.user
 }

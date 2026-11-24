@@ -44,14 +44,8 @@ Complete `docs/ai-notes.md`.
 
 Done when: it logs three AI uses with the prompt, what you kept, and what you changed and why, plus one AI mistake and how you caught it, and one thing you would not hand to AI.
 
-## D5-8 Assessment (2 pts)
+“Memory-only auth avoids storing credentials in the browser, so a refresh can’t leave a lasting stolen token — we trade convenience for a smaller attack window.”
 
-Write `docs/reflection.md`.
+ “Query caches what the server owns; Redux holds what the client owns. Token stays in memory so we don’t persist credentials — we trade stay-signed-in for a safer default.”
 
-Done when: it rates each topic out of 10 and names two gaps, each with one specific next step.
-
-## D5-9 Submission (3 pts)
-
-Open the pull request and give a 10-minute walkthrough: demo the full shopping flow, then explain one hard bug and one trade-off.
-
-Done when: CI passes, the README is complete, and each task has its own commit.
+ “Add always toasted success even when the cart was already at stock — the reducer no-oped, the UI lied. Fixed by comparing cart qty to live product stock, disabling at the cap, and only success-toasting when qty actually increased.”

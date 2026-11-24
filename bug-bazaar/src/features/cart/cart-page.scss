@@ -5,7 +5,16 @@
   color: $color-text;
 }
 
+.cart-page__panel,
+.cart-page__line-card,
+.cart-page__checkout-panel {
+  background: $color-bg-container;
+  border: 1px solid $color-card-border;
+  border-radius: $border-radius;
+}
+
 .cart-page__empty {
+  margin: 0;
   color: $color-text-secondary;
 }
 
@@ -28,6 +37,10 @@
 
 .cart-page__summary {
   color: $color-text;
+}
+
+.cart-page__checkout {
+  width: 100%;
 }
 
 .cart-page__total {

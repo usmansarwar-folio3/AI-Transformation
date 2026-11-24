@@ -5,6 +5,16 @@
   color: $color-text;
 }
 
+.order-confirmation-page__panel {
+  background: $color-bg-container;
+  border: 1px solid $color-card-border;
+  border-radius: $border-radius;
+}
+
+.order-confirmation-page__row {
+  margin: 0;
+}
+
 .order-confirmation-page__meta {
   color: $color-text-secondary;
 }

@@ -1,9 +1,9 @@
 import { memo, type KeyboardEvent } from 'react'
-import { Button, Card, Image, Space, Tag, Typography, message } from 'antd'
+import { Button, Card, Image, Space, Tag, Typography } from 'antd'
 import { useNavigate } from 'react-router-dom'
 import type { Product, ProductCategory } from '../../api'
-import { addItem, useAppDispatch } from '../../store'
 import { formatPriceFromCents } from '../../utils/formatPrice'
+import { useAddProductToCart } from './useAddProductToCart'
 import './product-card.scss'
 
 const { Text } = Typography
@@ -21,7 +21,7 @@ type ProductCardProps = {
 
 function ProductCardComponent({ product }: ProductCardProps) {
   const navigate = useNavigate()
-  const dispatch = useAppDispatch()
+  const { disabled, buttonLabel, handleAdd } = useAddProductToCart(product)
   const detailsPath = `/products/${product.id}`
   const priceLabel = formatPriceFromCents(product.price)
   const stockLabel = product.stock === 0 ? 'Out of stock' : `${product.stock} in stock`
@@ -37,23 +37,6 @@ function ProductCardComponent({ product }: ProductCardProps) {
       event.preventDefault()
       openDetails()
     }
-  }
-
-  function handleAddToCart() {
-    if (outOfStock) {
-      return
-    }
-
-    dispatch(
-      addItem({
-        productId: product.id,
-        name: product.name,
-        price: product.price,
-        stock: product.stock,
-        quantity: 1,
-      }),
-    )
-    void message.success(`${product.name} added to cart`)
   }
 
   return (
@@ -81,10 +64,10 @@ function ProductCardComponent({ product }: ProductCardProps) {
           type="primary"
           className="product-card__add-to-cart"
           block
-          disabled={outOfStock}
-          onClick={handleAddToCart}
+          disabled={disabled}
+          onClick={handleAdd}
         >
-          {outOfStock ? 'Out of stock' : 'Add to cart'}
+          {buttonLabel}
         </Button>,
       ]}
     >

@@ -1,4 +1,4 @@
-import { Button, Col, Row, Typography } from 'antd'
+import { Button, Card, Col, Row, Space, Typography } from 'antd'
 import { useNavigate, useParams } from 'react-router-dom'
 import { failure } from '../../api'
 import { AsyncStatusView } from '../../components/AsyncStatusView'
@@ -36,24 +36,28 @@ function OrderConfirmationContent({ orderId }: OrderConfirmationContentProps) {
       >
         {(order) => (
           <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-            <Paragraph>
-              <Text className="order-confirmation-page__meta">Order ID: </Text>
-              <Text code>{order.id}</Text>
-            </Paragraph>
-            <Paragraph>
-              <Text className="order-confirmation-page__meta">Status: </Text>
-              <Text className="order-confirmation-page__status" strong>
-                {order.status}
-              </Text>
-            </Paragraph>
-            <Button
-              type="primary"
-              onClick={() => {
-                void navigate('/')
-              }}
-            >
-              Continue shopping
-            </Button>
+            <Card className="order-confirmation-page__panel" bordered>
+              <Space orientation="vertical" size="middle">
+                <Paragraph className="order-confirmation-page__row">
+                  <Text className="order-confirmation-page__meta">Order ID: </Text>
+                  <Text code>{order.id}</Text>
+                </Paragraph>
+                <Paragraph className="order-confirmation-page__row">
+                  <Text className="order-confirmation-page__meta">Status: </Text>
+                  <Text className="order-confirmation-page__status" strong>
+                    {order.status}
+                  </Text>
+                </Paragraph>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    void navigate('/')
+                  }}
+                >
+                  Continue shopping
+                </Button>
+              </Space>
+            </Card>
           </Col>
         )}
       </AsyncStatusView>
