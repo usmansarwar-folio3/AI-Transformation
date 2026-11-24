@@ -32,7 +32,7 @@ export function useAddProductToCart(product: Product): AddProductToCartControls 
   if (outOfStock) {
     buttonLabel = 'Out of stock'
   } else if (cartFull) {
-    buttonLabel = `Cart full (${cartQty})`
+    buttonLabel = `Max added (${cartQty})`
   } else if (cartQty > 0) {
     buttonLabel = `Add to cart (${cartQty})`
   }

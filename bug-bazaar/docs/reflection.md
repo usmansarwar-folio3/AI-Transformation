@@ -30,7 +30,7 @@ Overall: I can defend the main design choices (fetch vs axios, Redux vs Query, m
 ## Gaps / what I would improve next
 
 - Partner **architecture/code review** still depends on the Day 5 swap — this file does not replace that.
-- Live stock is **dev WebSocket–centric**; a production path would need a real push endpoint and auth on the socket.
+- Live stock uses Vite `/stock` WebSocket locally and an in-browser mock poller on Vercel (`BUGBAZAR_ENABLE_MOCKS`); a real multi-user push feed would still need an external WS/SSE host.
 - Search races moved from explicit request-id guards to Query cancel; I would add one more integration test that proves UI under `slow=1` without relying only on unit-level abort.
 - Deploy/monitoring are “good enough for training” (Vercel + error boundary + `docs/monitoring.md`), not a full observability stack.
 
@@ -60,7 +60,7 @@ Overall: I can defend the main design choices (fetch vs axios, Redux vs Query, m
 **Fix:**
 
 - Shared `useAddProductToCart`: compare cart qty to current product stock.
-- Labels `Add to cart (N)` / disabled `Cart full (N)`; warning copy if a full-cart click fires; success only when qty increases.
+- Labels `Add to cart (N)` / disabled `Max added (N)`; warning copy if a full-cart click fires; success only when qty increases.
 - When live stock rises above cart qty, the control enables again without a refresh.
 
 **How I caught it:** Filling a low-stock product to the cap on the card, clicking again, and watching success toast + unchanged cart badge.
@@ -74,7 +74,7 @@ I would **not** hand the evaluator a reflection or a live bug story written enti
 ## Demo script (5 minutes)
 
 1. Home: filters in the URL, empty (`search=__none__`), error (`forceError=500`), retry.
-2. Details → add to cart → badge count + **Add to cart (N)**; at stock show **Cart full (N)** (no fake success); reload keeps cart, not session.
+2. Details → add to cart → badge count + **Add to cart (N)**; at stock show **Max added (N)** (no fake success); reload keeps cart, not session.
 3. Checkout without login → return-to → place order → stock/list refresh; retry same idempotency key does not double-create.
 4. Force a 409 on an out-of-stock line and show the **named** item.
 5. Optional: `slow=1` search race, live stock flicker (button re-enables if stock rises), CI green on the PR.
