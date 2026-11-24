@@ -185,6 +185,14 @@ Use MSW; no real backend.
 
 **How caught:** `npm run lint` after D4-7 wiring. Fixed by deriving idle from empty ids and only setting status from socket event callbacks / reconnect timers.
 
+
+
 ## Would not hand to AI
 
 The Day 5 reflection (`docs/reflection.md`) and the live walkthrough. Those need the engineer’s own scores, gaps, and spoken explanation of a hard bug — unexplained AI prose is capped at half points.
+
+## AI mistake (second)
+
+**Mistake:** Product list/details always called `message.success` right after `dispatch(addItem(...))`. The cart reducer already clamps to stock, so at the cap the dispatch was a no-op (or did not increase qty) while the UI still claimed the item was added.
+
+**How caught:** Adding the same product until stock on the card, then clicking again — toast said success, badge/count did not move. Fixed with `useAddProductToCart`: compare cart qty to live `product.stock`, disable + **Cart full (N)** at the cap, warn instead of success if a full-cart click fires, and only success-toast when qty actually increases. Live stock rising re-enables the button automatically.

@@ -5,7 +5,7 @@ import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { Product } from '../../api'
-import { createAppStore, selectCartItemCount } from '../../store'
+import { addItem, createAppStore, selectCartItemCount } from '../../store'
 import { ProductCard } from './ProductCard'
 
 const sampleProduct: Product = {
@@ -18,8 +18,16 @@ const sampleProduct: Product = {
   imageUrl: '/products/keyboard-1.svg',
 }
 
+const lowStockProduct: Product = {
+  ...sampleProduct,
+  id: 'p-low',
+  name: 'Limited Duck',
+  stock: 2,
+}
+
 const navigateMock = vi.fn()
 const messageSuccessMock = vi.hoisted(() => vi.fn())
+const messageWarningMock = vi.hoisted(() => vi.fn())
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
@@ -37,6 +45,7 @@ vi.mock('antd', async (importOriginal) => {
     message: {
       ...actual.message,
       success: messageSuccessMock,
+      warning: messageWarningMock,
     },
   }
 })
@@ -46,34 +55,38 @@ function LocationProbe() {
   return <Typography.Text data-testid="path">{location.pathname}</Typography.Text>
 }
 
+function renderCard(product: Product, store = createAppStore()) {
+  render(
+    <Provider store={store}>
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <ProductCard product={product} />
+                <LocationProbe />
+              </>
+            }
+          />
+        </Routes>
+      </MemoryRouter>
+    </Provider>,
+  )
+  return store
+}
+
 afterEach(() => {
   cleanup()
   navigateMock.mockReset()
   messageSuccessMock.mockReset()
+  messageWarningMock.mockReset()
 })
 
 describe('ProductCard', () => {
   it('shows dollars from cents and opens details with Enter', async () => {
     const user = userEvent.setup()
-    const store = createAppStore()
-
-    render(
-      <Provider store={store}>
-        <MemoryRouter initialEntries={['/']}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <ProductCard product={sampleProduct} />
-                  <LocationProbe />
-                </>
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      </Provider>,
-    )
+    renderCard(sampleProduct)
 
     expect(screen.getByText('$19.99')).toBeInTheDocument()
     expect(screen.getByText('5 in stock')).toBeInTheDocument()
@@ -85,32 +98,39 @@ describe('ProductCard', () => {
     expect(navigateMock).toHaveBeenCalledWith('/products/p-0001')
   })
 
-  it('adds the product to the cart without navigating', async () => {
+  it('adds the product to the cart without navigating and shows in-cart count', async () => {
     const user = userEvent.setup()
-    const store = createAppStore()
-
-    render(
-      <Provider store={store}>
-        <MemoryRouter initialEntries={['/']}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <ProductCard product={sampleProduct} />
-                  <LocationProbe />
-                </>
-              }
-            />
-          </Routes>
-        </MemoryRouter>
-      </Provider>,
-    )
+    const store = renderCard(sampleProduct)
 
     await user.click(screen.getByRole('button', { name: 'Add to cart' }))
 
     expect(selectCartItemCount(store.getState())).toBe(1)
     expect(navigateMock).not.toHaveBeenCalled()
     expect(messageSuccessMock).toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: 'Add to cart (1)' })).toBeInTheDocument()
+  })
+
+  it('disables add when the cart already holds all stock', async () => {
+    const user = userEvent.setup()
+    const store = createAppStore()
+    store.dispatch(
+      addItem({
+        productId: lowStockProduct.id,
+        name: lowStockProduct.name,
+        price: lowStockProduct.price,
+        stock: lowStockProduct.stock,
+        quantity: 2,
+      }),
+    )
+
+    renderCard(lowStockProduct, store)
+
+    const button = screen.getByRole('button', { name: 'Cart full (2)' })
+    expect(button).toBeDisabled()
+    expect(selectCartItemCount(store.getState())).toBe(2)
+
+    await user.click(button)
+    expect(selectCartItemCount(store.getState())).toBe(2)
+    expect(messageSuccessMock).not.toHaveBeenCalled()
   })
 })

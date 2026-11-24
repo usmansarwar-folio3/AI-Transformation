@@ -17,6 +17,7 @@ export { useAppDispatch, useAppSelector } from './hooks'
 export {
   selectCartItemCount,
   selectCartItems,
+  selectCartQuantityByProductId,
   selectCartTotalCents,
   selectIsLoggedIn,
   selectSessionUser,
